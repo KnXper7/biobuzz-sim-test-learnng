@@ -1,0 +1,2868 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="FTC robot simulator and 3-day course for the Biobuzz team code.">
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Biobuzz Robot Sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: two working columns — learn/code on the left, the robot (field + driver station) on the right; stacks on phones with the robot first. */
+:root {
+  --bg: #eceff2;
+  --panel: #ffffff;
+  --sunk: #f5f7f9;
+  --ink: #15191e;
+  --muted: #5a6370;
+  --line: #d3d9e0;
+  --accent: #d9530f;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe6d9;
+  --ok: #1d8a4b;
+  --ok-soft: #dcf1e4;
+  --bad: #c42b2b;
+  --bad-soft: #f9e0e0;
+  --warn: #9a6a00;
+  --tile: #c3c8ce;
+  --tile2: #bcc1c8;
+  --seam: #a3aab3;
+  --wall: #353b43;
+  --robot: #2a3037;
+  --robot-edge: #0e1114;
+  --wheel: #6b737d;
+  --fwd: #1d9a52;
+  --rev: #d33a3a;
+  --zone: #d9530f;
+  --trail: rgba(217, 83, 15, .55);
+  --screen: #10151b;
+  --screen-ink: #d6f5e1;
+  --screen-dim: #7f9a8a;
+  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --panel: #171b20; --sunk: #12161a; --ink: #e6e9ed; --muted: #98a2ae; --line: #2a3139;
+    --accent: #ff7b33; --accent-ink: #1a0d05; --accent-soft: #3a2216; --ok: #45c47a; --ok-soft: #173326;
+    --bad: #ff6b6b; --bad-soft: #3a1c1c; --warn: #e2b44a;
+    --tile: #2b3037; --tile2: #282d33; --seam: #3b424b; --wall: #8a94a0; --robot: #cfd6de; --robot-edge: #f2f5f8; --wheel: #6f7884;
+    --fwd: #45c47a; --rev: #ff6b6b; --zone: #ff7b33; --trail: rgba(255, 123, 51, .55);
+    --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --panel: #171b20; --sunk: #12161a; --ink: #e6e9ed; --muted: #98a2ae; --line: #2a3139;
+  --accent: #ff7b33; --accent-ink: #1a0d05; --accent-soft: #3a2216; --ok: #45c47a; --ok-soft: #173326;
+  --bad: #ff6b6b; --bad-soft: #3a1c1c; --warn: #e2b44a;
+  --tile: #2b3037; --tile2: #282d33; --seam: #3b424b; --wall: #8a94a0; --robot: #cfd6de; --robot-edge: #f2f5f8; --wheel: #6f7884;
+  --fwd: #45c47a; --rev: #ff6b6b; --zone: #ff7b33; --trail: rgba(255, 123, 51, .55);
+  --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px; max-width: 1560px; margin: 0 auto; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 12px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: 26px; letter-spacing: .02em; text-transform: uppercase; line-height: 1; }
+.brand b { color: var(--accent); font-weight: 700; }
+.sub { color: var(--muted); font-size: 13.5px; }
+.sub code { font-family: var(--f-mono); font-size: 12px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 14px; align-items: start; }
+@media (max-width: 1040px) { .grid { grid-template-columns: minmax(0, 1fr); } .simcol { order: -1; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.tabs { display: flex; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { font-family: var(--f-display); font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; border: 0; background: none; color: var(--muted); padding: 8px 14px 9px; border-radius: 7px 7px 0 0; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); background: var(--sunk); box-shadow: inset 0 -2px 0 var(--accent); }
+.tab:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pane { padding: 14px; min-width: 0; }
+button.btn { font: 600 13.5px/1 var(--f-body); border: 1px solid var(--line); background: var(--sunk); color: var(--ink); border-radius: 7px; padding: 8px 12px; cursor: pointer; }
+button.btn:hover:not(:disabled) { border-color: var(--muted); }
+button.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.btn:disabled { opacity: .45; cursor: not-allowed; }
+button.btn.sm { padding: 6px 9px; font-size: 12.5px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+kbd { font-family: var(--f-mono); font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--sunk); }
+
+/* lessons */
+.daylabel { font-family: var(--f-display); font-weight: 700; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 14px 0 6px; }
+.daylabel:first-child { margin-top: 0; }
+details.lesson { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--panel); }
+details.lesson[open] { background: var(--sunk); }
+details.lesson > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; }
+details.lesson > summary::-webkit-details-marker { display: none; }
+.lnum { font-family: var(--f-display); font-weight: 700; font-size: 20px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.ltitle { font-weight: 600; font-size: 15.5px; line-height: 1.25; }
+.lmeta { font-size: 12.5px; color: var(--muted); }
+.pill { font: 600 11.5px/1 var(--f-body); letter-spacing: .04em; text-transform: uppercase; padding: 5px 8px; border-radius: 99px; background: var(--bg); color: var(--muted); white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.live { background: var(--accent-soft); color: var(--accent); }
+.lbody { padding: 0 14px 14px 56px; max-width: 72ch; }
+@media (max-width: 560px) { .lbody { padding-left: 14px; } }
+.lbody h4 { font-family: var(--f-display); font-size: 16px; letter-spacing: .05em; text-transform: uppercase; margin: 16px 0 4px; }
+.lbody p, .lbody li { margin: 6px 0; }
+.lbody ul, .lbody ol { padding-left: 20px; margin: 6px 0; }
+.lbody code { font-family: var(--f-mono); font-size: 12.5px; background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+.lbody pre { font-family: var(--f-mono); font-size: 12.5px; line-height: 1.5; background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px; overflow-x: auto; margin: 8px 0; }
+.lbody code { overflow-wrap: anywhere; }
+.lbody pre code { background: none; padding: 0; overflow-wrap: normal; }
+.callout { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--panel); border-radius: 0 7px 7px 0; margin: 10px 0; }
+.challenge { border: 1px dashed var(--accent); border-radius: 8px; padding: 10px 12px; margin-top: 14px; background: var(--panel); }
+.challenge .row { margin-top: 8px; }
+.chtitle { font-family: var(--f-display); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-size: 14px; }
+
+/* code */
+.filebar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.file { font: 500 12.5px/1 var(--f-mono); border: 1px solid var(--line); background: var(--sunk); color: var(--ink); border-radius: 6px; padding: 7px 9px; cursor: pointer; }
+.file[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.file .tag { font-family: var(--f-body); font-size: 10.5px; color: var(--muted); margin-left: 4px; text-transform: uppercase; letter-spacing: .05em; }
+.editorwrap { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--sunk); }
+#editor { display: block; width: 100%; height: min(64vh, 640px); min-height: 320px; resize: vertical; border: 0; background: transparent; color: var(--ink); font: 13px/1.55 var(--f-mono); padding: 12px 14px; tab-size: 4; white-space: pre; overflow: auto; outline: none; }
+.edstatus { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; margin-top: 8px; font-size: 13px; }
+.compileok { color: var(--ok); } .compilebad { color: var(--bad); }
+.notes { margin-top: 14px; font-size: 13.5px; }
+.notes summary { cursor: pointer; font-weight: 600; }
+.notes ul { padding-left: 20px; }
+
+/* robot settings */
+.form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 14px; }
+@media (max-width: 560px) { .form { grid-template-columns: minmax(0, 1fr); } }
+.field label, .fieldlabel { display: block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; width: 100%; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 4px; accent-color: var(--accent); }
+#cfgText { width: 100%; height: 190px; font: 12.5px/1.55 var(--f-mono); background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; resize: vertical; white-space: pre; }
+
+/* sim column */
+.ds { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.ds select { min-width: 0; }
+@media (max-width: 560px) { .ds { grid-template-columns: minmax(0, 1fr); } .dsbtns .btn { flex: 1; } }
+.dsbtns { display: flex; gap: 6px; }
+.dsbtns .btn { font-family: var(--f-display); font-size: 15px; letter-spacing: .08em; text-transform: uppercase; padding: 9px 14px; }
+.dsstat { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dsstat b { color: var(--ink); font-weight: 600; }
+.state { font-family: var(--f-display); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.state.init { color: var(--warn); } .state.running { color: var(--ok); } .state.idle { color: var(--muted); }
+.fieldwrap { position: relative; padding: 12px; }
+#field { display: block; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; touch-action: none; cursor: grab; }
+#field:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.banner { margin-top: 10px; background: var(--panel); border: 1px solid var(--accent); border-radius: 8px; padding: 7px 10px; font-size: 13px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.banner.pass { border-color: var(--ok); }
+.banner b { font-family: var(--f-display); letter-spacing: .06em; text-transform: uppercase; }
+.poseline { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; padding: 0 12px 10px; font: 12.5px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 0 12px 12px; }
+@media (max-width: 620px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.screen { background: var(--screen); color: var(--screen-ink); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.55 var(--f-mono); min-height: 150px; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+.screen .dim { color: var(--screen-dim); }
+.screenhead { font: 600 11.5px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: flex; justify-content: space-between; gap: 8px; }
+#log .err { color: #ff8b8b; } #log .warn { color: #ffd27a; } #log .ok { color: #8ef0b0; }
+.mech { display: flex; gap: 10px; align-items: center; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+#mechCanvas { width: 120px; height: 72px; flex: none; }
+
+/* gamepad */
+.pad { padding: 12px; border-top: 1px solid var(--line); }
+.padgrid { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 14px; align-items: center; }
+.stick { width: 96px; height: 96px; border-radius: 50%; background: var(--sunk); border: 1px solid var(--line); position: relative; touch-action: none; cursor: grab; }
+.stick .knob { position: absolute; width: 40px; height: 40px; border-radius: 50%; background: var(--robot); left: 28px; top: 28px; box-shadow: 0 2px 6px rgba(0,0,0,.25); pointer-events: none; }
+.stick .lab { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 11px; color: var(--muted); }
+.padmid { display: flex; flex-direction: column; gap: 8px; align-items: center; min-width: 0; }
+.buttons, .dpad { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); gap: 2px; }
+.gb { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--sunk); color: var(--ink); font: 700 12px var(--f-body); cursor: pointer; padding: 0; touch-action: none; }
+.dpad .gb { border-radius: 5px; }
+.gb.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.shoulders { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.shoulders .gb { width: auto; border-radius: 6px; padding: 0 8px; height: 26px; }
+.trig { width: 60px; height: 8px; background: var(--sunk); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.trig > i { display: block; height: 100%; width: 0; background: var(--accent); }
+.keys { font-size: 12px; color: var(--muted); margin-top: 18px; line-height: 1.9; }
+@media (max-width: 480px) { .stick { width: 84px; height: 84px; } .stick .knob { left: 22px; top: 22px; } }
+
+/* explain */
+.linkbtn { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+.key { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 4px; margin-right: 4px; border-left: 3px solid; background: var(--sunk); }
+.key.mine { border-color: var(--accent); } .key.bug { border-color: var(--bad); } .key.tip { border-color: var(--warn); }
+.review { display: grid; gap: 6px; margin-bottom: 12px; }
+.rvhead { font-family: var(--f-display); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
+.rvitem { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; text-align: left; border: 1px solid var(--line); background: var(--sunk); color: var(--ink); border-radius: 7px; padding: 7px 10px; font: 13.5px/1.45 var(--f-body); cursor: pointer; }
+.rvk { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; padding-top: 2px; }
+.rvitem.bug .rvk { color: var(--bad); } .rvitem.warn .rvk, .rvitem.tip .rvk { color: var(--warn); }
+.xcode { border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); overflow-x: auto; padding: 6px 0; }
+.xline { display: grid; grid-template-columns: 40px max-content; width: 100%; min-width: max-content; text-align: left; border: 0; border-left: 3px solid transparent; background: none; color: var(--ink); font: 12.5px/1.6 var(--f-mono); padding: 0 10px 0 0; cursor: pointer; white-space: pre; }
+.xline:hover { background: var(--bg); }
+.xline.plain { color: var(--muted); }
+.xline.hasmine { border-left-color: var(--accent); } .xline.hasbug { border-left-color: var(--bad); background: var(--bad-soft); } .xline.hastip { border-left-color: var(--warn); }
+.xline[aria-expanded="true"] { background: var(--accent-soft); }
+.xn { color: var(--muted); text-align: right; padding-right: 12px; user-select: none; }
+.xbox { position: sticky; left: 0; width: min(100%, 680px); margin: 4px 10px 8px 43px; display: grid; gap: 6px; font: 14px/1.5 var(--f-body); white-space: normal; }
+@media (max-width: 560px) { .xbox { margin-left: 8px; width: calc(100vw - 72px); } }
+.xitem { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--muted); border-radius: 6px; padding: 8px 10px; }
+.xitem b { display: block; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
+.xitem.mine { border-left-color: var(--accent); } .xitem.bug { border-left-color: var(--bad); } .xitem.warn, .xitem.tip { border-left-color: var(--warn); }
+.xitem code { font-family: var(--f-mono); font-size: 12.5px; background: var(--sunk); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Biobuzz <b>Robot Sim</b></div>
+    <div class="sub">Runs your team's TeamCode from <code>Sparky384/2026-Biobuzz</code> on a virtual robot. FTC SDK 12.0 API, Java subset.</div>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-label="Learn and code">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-learn" aria-selected="true" data-pane="learn">Lessons</button>
+        <button class="tab" role="tab" id="tab-explain" aria-selected="false" data-pane="explain">Explain my code</button>
+        <button class="tab" role="tab" id="tab-code" aria-selected="false" data-pane="code">Code</button>
+        <button class="tab" role="tab" id="tab-robot" aria-selected="false" data-pane="robot">Robot setup</button>
+      </div>
+
+      <div class="pane" id="pane-learn" role="tabpanel">
+        <p class="small muted" style="margin:0 0 12px">Three days, twelve lessons. Every lesson works with your team's real files, and each challenge is checked automatically on the field. Progress is saved in this browser.</p>
+        <div class="callout small" style="margin:0 0 14px">Wrote code you don't fully understand yet? Open <button class="linkbtn" data-goto="explain">Explain my code</button>, click any line, and it tells you what that line does and whether it has a bug.</div>
+        <div id="lessons"></div>
+      </div>
+
+      <div class="pane" id="pane-explain" role="tabpanel" hidden>
+        <div class="row" style="margin-bottom:10px">
+          <label class="fieldlabel" for="explainSel" style="margin:0">File</label>
+          <select id="explainSel" style="width:auto; min-width:0; flex:1; max-width:340px"></select>
+          <button class="btn sm" id="btnExplainEdit">Edit this file</button>
+        </div>
+        <p class="small muted" style="margin:0 0 10px">Click any line to see what it does. Colored lines have something to know: <span class="key mine">your code, explained</span> <span class="key bug">bug</span> <span class="key tip">tip</span></p>
+        <div id="explainReview" class="review"></div>
+        <div id="explainCode" class="xcode"></div>
+      </div>
+
+      <div class="pane" id="pane-code" role="tabpanel" hidden>
+        <div class="filebar" id="files"></div>
+        <div class="editorwrap"><textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Java editor"></textarea></div>
+        <div class="edstatus">
+          <span id="compileStatus" class="muted">Edits compile when you press INIT.</span>
+          <span class="row">
+            <button class="btn sm" id="btnExplainThis">Explain this file</button>
+            <button class="btn sm" id="btnNewFile">New OpMode</button>
+            <button class="btn sm" id="btnRevert">Revert file</button>
+            <button class="btn sm" id="btnDelete">Delete file</button>
+          </span>
+        </div>
+        <details class="notes">
+          <summary>What Java the simulator understands</summary>
+          <ul>
+            <li>Classes with fields, constructors, methods, <code>static final</code> constants, simple <code>enum</code>s, <code>LinearOpMode</code> and iterative <code>OpMode</code>.</li>
+            <li>Hardware: <code>DcMotor</code>/<code>DcMotorEx</code>, <code>Servo</code>, <code>CRServo</code>, <code>IMU</code>, <code>DistanceSensor</code>, <code>TouchSensor</code>, <code>ElapsedTime</code>, <code>Range</code>, <code>telemetry</code>, <code>gamepad1</code>/<code>gamepad2</code>.</li>
+            <li>Not modeled: interfaces, inner/anonymous classes, generics beyond simple lists, integer division (<code>5/2</code> gives 2.5 here, 2 in Java), vision, Road Runner. Android Studio is still the real compiler: always build there before a match.</li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="pane" id="pane-robot" role="tabpanel" hidden>
+        <div class="form">
+          <div class="field"><label for="optDrive">Drivetrain</label>
+            <select id="optDrive"><option value="tank">4 traction wheels (tank / arcade)</option><option value="mecanum">Mecanum (can strafe)</option></select></div>
+          <div class="field"><label for="optMotor">Drive motors</label>
+            <select id="optMotor">
+              <option value="312">goBILDA 5203, 312 RPM (537.7 ticks/rev)</option>
+              <option value="435">goBILDA 5203, 435 RPM (384.5 ticks/rev)</option>
+              <option value="223">goBILDA 5203, 223 RPM (751.8 ticks/rev)</option>
+              <option value="hd20">REV HD Hex 20:1, 300 RPM (560 ticks/rev)</option>
+            </select></div>
+          <div class="field"><label for="optWheel">Wheel diameter</label>
+            <select id="optWheel"><option value="3.7795">96 mm (goBILDA mecanum)</option><option value="4.0945">104 mm (goBILDA mecanum)</option><option value="4">4 in traction</option><option value="3.5433">90 mm traction</option></select></div>
+          <div class="field"><label for="optSpeed">Sim speed</label>
+            <select id="optSpeed"><option value="1">Real time</option><option value="0.5">Half speed</option></select></div>
+          <label class="check"><input type="checkbox" id="optMirror" checked><span><b>Left motors mounted mirrored.</b> Like a real chassis: the same positive power spins the left and right wheels in opposite directions until you reverse one side in code.</span></label>
+          <label class="check"><input type="checkbox" id="optVar" checked><span><b>Motor variation.</b> Each motor is a few percent stronger or weaker every INIT, like real motors and batteries. Time-based autos drift. Encoder modes (RUN_USING_ENCODER, RUN_TO_POSITION) regulate speed, so they don't.</span></label>
+        </div>
+        <h4 class="fieldlabel" style="margin-top:18px">Robot configuration (what the Control Hub knows)</h4>
+        <p class="small muted" style="margin:0 0 6px">One device per line: <code>type name [slot]</code>. Names must match the strings in <code>hardwareMap.get()</code> exactly. Slots FL/FR/BL/BR place drive motors on the chassis. Types: motor, servo, crservo, imu, distance, touch.</p>
+        <textarea id="cfgText" spellcheck="false" aria-label="Robot configuration"></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn sm" id="btnCfgReset">Restore default configuration</button><span class="small muted" id="cfgMsg"></span></div>
+      </div>
+    </section>
+
+    <section class="card simcol" aria-label="Simulator">
+      <div class="ds">
+        <select id="opSelect" aria-label="OpMode"></select>
+        <div class="dsbtns">
+          <button class="btn" id="btnInit">Init</button>
+          <button class="btn primary" id="btnStart" disabled>Start</button>
+          <button class="btn" id="btnStop" disabled>Stop</button>
+        </div>
+        <div class="dsstat">
+          <span>State <b class="state idle" id="stateLabel">Idle</b></span>
+          <span>Match <b id="matchClock">–</b></span>
+          <span>Loop <b id="loopHz">–</b></span>
+          <span><button class="btn sm" id="btnReset">Reset robot</button></span>
+        </div>
+      </div>
+      <div class="fieldwrap">
+        <canvas id="field" tabindex="0" aria-label="Field, 12 by 12 feet. Click here then drive with the keyboard."></canvas>
+        <div class="banner" id="banner" hidden><span id="bannerText"></span><button class="btn sm" id="btnEndChallenge">Exit</button></div>
+      </div>
+      <div class="poseline"><span id="poseText"></span><span id="speedText"></span></div>
+      <div class="lower">
+        <div>
+          <div class="screenhead"><span>Driver Hub telemetry</span><span id="teleCount"></span></div>
+          <div class="screen" id="telemetry"><span class="dim">Telemetry appears here after your code calls telemetry.update().</span></div>
+          <div class="mech"><canvas id="mechCanvas" width="240" height="144" aria-label="Arm and claw"></canvas><span id="mechText">Arm and claw appear when your code uses the "arm" motor or "claw" servo.</span></div>
+        </div>
+        <div>
+          <div class="screenhead"><span>Robot log</span><button class="btn sm" id="btnClearLog">Clear</button></div>
+          <div class="screen" id="log"></div>
+        </div>
+      </div>
+      <div class="pad">
+        <div class="padgrid">
+          <div class="stick" id="stickL" aria-label="Left stick"><div class="knob"></div><div class="lab">left stick</div></div>
+          <div class="padmid">
+            <div class="shoulders">
+              <button class="gb" data-btn="left_bumper">LB</button>
+              <div class="trig" title="left trigger"><i id="ltBar"></i></div>
+              <div class="trig" title="right trigger"><i id="rtBar"></i></div>
+              <button class="gb" data-btn="right_bumper">RB</button>
+            </div>
+            <div class="row" style="gap:18px; justify-content:center">
+              <div class="dpad">
+                <span></span><button class="gb" data-btn="dpad_up" aria-label="dpad up">▲</button><span></span>
+                <button class="gb" data-btn="dpad_left" aria-label="dpad left">◀</button><span></span><button class="gb" data-btn="dpad_right" aria-label="dpad right">▶</button>
+                <span></span><button class="gb" data-btn="dpad_down" aria-label="dpad down">▼</button><span></span>
+              </div>
+              <div class="buttons">
+                <span></span><button class="gb" data-btn="y">Y</button><span></span>
+                <button class="gb" data-btn="x">X</button><span></span><button class="gb" data-btn="b">B</button>
+                <span></span><button class="gb" data-btn="a">A</button><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="stick" id="stickR" aria-label="Right stick"><div class="knob"></div><div class="lab">right stick</div></div>
+        </div>
+        <div class="keys">Keyboard (click the field first): left stick <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · right stick <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> · A B X Y <kbd>K</kbd><kbd>L</kbd><kbd>J</kbd><kbd>I</kbd> · bumpers <kbd>Q</kbd><kbd>E</kbd> · triggers <kbd>Z</kbd><kbd>C</kbd> · dpad <kbd>T</kbd><kbd>F</kbd><kbd>G</kbd><kbd>H</kbd> · <span id="padStatus">A USB/Bluetooth controller works too.</span></div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+'use strict';
+// ---------- Your team's files, exactly as pulled (commit 5e9759a, "10/22 added TestAuto and DriveTrain classes") ----------
+const REPO_FILES = {
+"MyFIRSTOpModeClass.java": `package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@TeleOp
+
+public class MyFIRSTOpModeClass extends LinearOpMode {
+    private DcMotor frontLeft;
+    private DcMotor backLeft;
+
+    private DcMotor frontRight;
+    private DcMotor backRight;
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        waitForStart();
+
+        telemetry.addData("Is Started", isStarted());
+
+        while (opModeIsActive()) {
+            double drive = gamepad1.left_stick_y * -1;
+            double turn = gamepad1.left_stick_x;
+            double left = drive + turn;
+            double right = drive - turn;
+
+            frontLeft.setPower(left);
+            backLeft.setPower(left);
+            frontRight.setPower(right);
+            backRight.setPower(right);
+        }
+        frontLeft.setPower(0);
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+    }
+}`,
+"TestAuto.java": `package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+@Autonomous
+public class TestAuto extends LinearOpMode {
+
+    private DcMotor frontLeft;
+    private DcMotor backLeft;
+
+    private DcMotor frontRight;
+    private DcMotor backRight;
+    private ElapsedTime timer = new ElapsedTime();
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        waitForStart();
+
+        setMotorPower(.5);
+
+        timer.reset();
+        while (timer.milliseconds() < 2000){
+            //Do nothing inside
+        }
+        setMotorPower(0);
+    }
+
+    private void setMotorPower(double motorPower){
+        frontLeft.setPower(motorPower);
+        backLeft.setPower(motorPower);
+        frontRight.setPower(motorPower);
+        backRight.setPower(motorPower);
+    }
+}`,
+"DriveTrain.java": `package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+
+public class DriveTrain {
+    private DcMotor frontLeft;
+    private DcMotor backLeft;
+
+    private DcMotor frontRight;
+    private DcMotor backRight;
+
+
+    public DriveTrain(HardwareMap hardwareMap) {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+
+
+    }
+    public void drive(double forward, double turn){
+
+        double left = forward + turn;
+        double right = forward - turn;
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        frontLeft.setPower(left);
+        backLeft.setPower(left);
+        frontRight.setPower(right);
+        backRight.setPower(right);
+    }
+    public void stop(){
+        drive(0,0);
+    }
+    public void driveDistance(double distance){
+        int counts = (int) distance;
+        //Replace with math later.
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeft.setTargetPosition(counts);
+        backLeft.setTargetPosition(counts);
+        frontRight.setTargetPosition(counts);
+        backRight.setTargetPosition(counts);
+    }
+}`
+};
+
+const HEADER = `package org.firstinspires.ftc.teamcode;
+
+`;
+
+// ---------- Reference solutions (one per lesson) ----------
+const SOLUTIONS = {
+"L2_DriveStraight.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@TeleOp(name = "L2 Drive Straight", group = "Lessons")
+public class L2_DriveStraight extends LinearOpMode {
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        // THE FIX: the left motors are mounted mirrored, so flip them in software.
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            double drive = -gamepad1.left_stick_y;   // pushing up gives a NEGATIVE y
+            double turn = gamepad1.left_stick_x;
+            double left = drive + turn;
+            double right = drive - turn;
+
+            frontLeft.setPower(left);
+            backLeft.setPower(left);
+            frontRight.setPower(right);
+            backRight.setPower(right);
+        }
+    }
+}
+`,
+"L3_TelemetryDrive.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@TeleOp(name = "L3 Telemetry Drive", group = "Lessons")
+public class L3_TelemetryDrive extends LinearOpMode {
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        telemetry.addLine("Ready. Press START.");
+        telemetry.update();
+        waitForStart();
+
+        while (opModeIsActive()) {
+            double drive = -gamepad1.left_stick_y;
+            double turn = gamepad1.left_stick_x;
+
+            // Slow mode while the right bumper is held
+            double scale = gamepad1.right_bumper ? 0.4 : 1.0;
+
+            double left = (drive + turn) * scale;
+            double right = (drive - turn) * scale;
+
+            // Normalize: setPower clips at 1.0, which would bend your turn.
+            double max = Math.max(1.0, Math.max(Math.abs(left), Math.abs(right)));
+            left /= max;
+            right /= max;
+
+            frontLeft.setPower(left);
+            backLeft.setPower(left);
+            frontRight.setPower(right);
+            backRight.setPower(right);
+
+            telemetry.addData("Stick", "drive %.2f  turn %.2f", drive, turn);
+            telemetry.addData("Power", "left %.2f  right %.2f", left, right);
+            telemetry.addData("Slow mode", gamepad1.right_bumper);
+            telemetry.addData("FL encoder", frontLeft.getCurrentPosition());
+            telemetry.update();   // nothing shows without this line
+        }
+    }
+}
+`,
+"L4_SubsystemTeleOp.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+@TeleOp(name = "L4 DriveTrain TeleOp", group = "Lessons")
+public class L4_SubsystemTeleOp extends LinearOpMode {
+
+    @Override
+    public void runOpMode() {
+        // All motor names and directions live in DriveTrain.java now.
+        DriveTrain driveTrain = new DriveTrain(hardwareMap);
+
+        telemetry.addLine("DriveTrain ready");
+        telemetry.update();
+        waitForStart();
+
+        while (opModeIsActive()) {
+            double forward = -gamepad1.left_stick_y;
+            double turn = gamepad1.left_stick_x;
+            driveTrain.drive(forward, turn);
+
+            telemetry.addData("Forward", "%.2f", forward);
+            telemetry.addData("Turn", "%.2f", turn);
+            telemetry.update();
+        }
+        driveTrain.stop();
+    }
+}
+`,
+"L5_TimedAuto.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+@Autonomous(name = "L5 Timed Auto", group = "Lessons")
+public class L5_TimedAuto extends LinearOpMode {
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+    private ElapsedTime timer = new ElapsedTime();
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);   // fix #1: directions
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        waitForStart();
+
+        setMotorPower(0.5);
+        timer.reset();
+        // fix #2: also check opModeIsActive() so STOP works mid-move
+        while (opModeIsActive() && timer.seconds() < 1.6) {
+            telemetry.addData("Driving", "%.2f s", timer.seconds());
+            telemetry.update();
+        }
+        setMotorPower(0);
+    }
+
+    private void setMotorPower(double motorPower) {
+        frontLeft.setPower(motorPower);
+        backLeft.setPower(motorPower);
+        frontRight.setPower(motorPower);
+        backRight.setPower(motorPower);
+    }
+}
+`,
+"L6_EncoderAuto.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@Autonomous(name = "L6 Encoder Drive", group = "Lessons")
+public class L6_EncoderAuto extends LinearOpMode {
+    // goBILDA 5203 Yellow Jacket, 312 RPM: 537.7 encoder ticks per output revolution
+    static final double COUNTS_PER_MOTOR_REV = 537.7;
+    static final double WHEEL_DIAMETER_INCHES = 96.0 / 25.4;      // 96 mm wheel
+    static final double COUNTS_PER_INCH = COUNTS_PER_MOTOR_REV / (WHEEL_DIAMETER_INCHES * Math.PI);
+
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+    private DcMotor[] motors;
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        motors = new DcMotor[]{frontLeft, backLeft, frontRight, backRight};
+        for (DcMotor m : motors) {
+            m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+
+        telemetry.addData("Counts per inch", "%.2f", COUNTS_PER_INCH);
+        telemetry.update();
+        waitForStart();
+
+        driveInches(48, 0.6);
+    }
+
+    private void driveInches(double inches, double power) {
+        int target = (int) Math.round(inches * COUNTS_PER_INCH);
+
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        for (DcMotor m : motors) m.setTargetPosition(target);                 // 1. target FIRST
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // 2. then the mode
+        for (DcMotor m : motors) m.setPower(Math.abs(power));                 // 3. then power
+
+        // 4. wait until every motor arrives
+        while (opModeIsActive() && (frontLeft.isBusy() || backLeft.isBusy()
+                || frontRight.isBusy() || backRight.isBusy())) {
+            telemetry.addData("Target", target);
+            telemetry.addData("FL / FR", "%d / %d", frontLeft.getCurrentPosition(), frontRight.getCurrentPosition());
+            telemetry.update();
+        }
+
+        for (DcMotor m : motors) m.setPower(0);
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+}
+`,
+"L7_ImuTurn.java": HEADER + `import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+@Autonomous(name = "L7 IMU Turn", group = "Lessons")
+public class L7_ImuTurn extends LinearOpMode {
+    static final double TURN_KP = 0.015;          // power per degree of error
+    static final double MIN_TURN_POWER = 0.05;    // enough to overcome friction
+    static final double HEADING_TOLERANCE = 1.0;  // degrees
+
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+    private IMU imu;
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+
+        waitForStart();
+        imu.resetYaw();
+
+        turnToHeading(90);   // +90 = counter-clockwise (left)
+    }
+
+    private double getHeading() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+    }
+
+    /** Proportional (P) controller: turn power shrinks as the error shrinks. */
+    private void turnToHeading(double targetDegrees) {
+        ElapsedTime settled = new ElapsedTime();
+        while (opModeIsActive()) {
+            double error = AngleUnit.normalizeDegrees(targetDegrees - getHeading());
+            if (Math.abs(error) > HEADING_TOLERANCE) settled.reset();
+            if (settled.seconds() > 0.25) break;          // stayed on target for 250 ms
+
+            double rotate = Range.clip(error * TURN_KP, -0.5, 0.5);
+            if (Math.abs(rotate) < MIN_TURN_POWER) rotate = MIN_TURN_POWER * Math.signum(rotate);
+            setDrive(0, rotate);
+
+            telemetry.addData("Heading", "%.1f", getHeading());
+            telemetry.addData("Error", "%.1f", error);
+            telemetry.update();
+        }
+        setDrive(0, 0);
+    }
+
+    /** forward: + drives ahead. rotateCCW: + turns left (counter-clockwise), like the IMU. */
+    private void setDrive(double forward, double rotateCCW) {
+        double left = forward - rotateCCW;
+        double right = forward + rotateCCW;
+        frontLeft.setPower(left);
+        backLeft.setPower(left);
+        frontRight.setPower(right);
+        backRight.setPower(right);
+    }
+}
+`,
+"L8_SquareAuto.java": HEADER + `import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+@Autonomous(name = "L8 Square Auto", group = "Lessons")
+public class L8_SquareAuto extends LinearOpMode {
+    static final double COUNTS_PER_INCH = 537.7 / ((96.0 / 25.4) * Math.PI);
+    static final double TILE = 24.0;
+
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+    private DcMotor[] motors;
+    private IMU imu;
+    private String step = "init";
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        motors = new DcMotor[]{frontLeft, backLeft, frontRight, backRight};
+        for (DcMotor m : motors) m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+
+        waitForStart();
+        imu.resetYaw();
+
+        // The whole autonomous reads like a plan:
+        step = "side 1";  driveInches(2 * TILE, 0.6);  turnToHeading(90);
+        step = "side 2";  driveInches(2 * TILE, 0.6);  turnToHeading(180);
+        step = "side 3";  driveInches(2 * TILE, 0.6);  turnToHeading(-90);
+        step = "side 4";  driveInches(2 * TILE, 0.6);  turnToHeading(0);
+        step = "done";
+        showStatus();
+    }
+
+    private void driveInches(double inches, double power) {
+        int target = (int) Math.round(inches * COUNTS_PER_INCH);
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        for (DcMotor m : motors) m.setTargetPosition(target);
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        for (DcMotor m : motors) m.setPower(Math.abs(power));
+        while (opModeIsActive() && (frontLeft.isBusy() || backLeft.isBusy()
+                || frontRight.isBusy() || backRight.isBusy())) {
+            showStatus();
+        }
+        for (DcMotor m : motors) m.setPower(0);
+        for (DcMotor m : motors) m.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    private void turnToHeading(double target) {
+        ElapsedTime settled = new ElapsedTime();
+        while (opModeIsActive()) {
+            double error = AngleUnit.normalizeDegrees(target - getHeading());
+            if (Math.abs(error) > 1.0) settled.reset();
+            if (settled.seconds() > 0.25) break;
+            double rotate = Range.clip(error * 0.015, -0.5, 0.5);
+            if (Math.abs(rotate) < 0.05) rotate = 0.05 * Math.signum(rotate);
+            frontLeft.setPower(-rotate);
+            backLeft.setPower(-rotate);
+            frontRight.setPower(rotate);
+            backRight.setPower(rotate);
+            showStatus();
+        }
+        for (DcMotor m : motors) m.setPower(0);
+    }
+
+    private double getHeading() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+    }
+
+    private void showStatus() {
+        telemetry.addData("Step", step);
+        telemetry.addData("Heading", "%.1f", getHeading());
+        telemetry.addData("Runtime", "%.1f s", getRuntime());
+        telemetry.update();
+    }
+}
+`,
+"L9_MecanumTeleOp.java": HEADER + `import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+@TeleOp(name = "L9 Mecanum Drive", group = "Lessons")
+public class L9_MecanumTeleOp extends LinearOpMode {
+
+    @Override
+    public void runOpMode() {
+        DcMotor frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        DcMotor backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        DcMotor frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        DcMotor backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        IMU imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+
+        boolean fieldCentric = false;
+        boolean lastA = false;
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            double y = -gamepad1.left_stick_y;   // forward
+            double x = gamepad1.left_stick_x;    // strafe right
+            double rx = gamepad1.right_stick_x;  // turn clockwise
+
+            // A toggles field-centric. Detect the press, not the hold.
+            if (gamepad1.a && !lastA) fieldCentric = !fieldCentric;
+            lastA = gamepad1.a;
+            if (gamepad1.y) imu.resetYaw();      // "this way is forward now"
+
+            if (fieldCentric) {
+                double h = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+                double rotX = x * Math.cos(-h) - y * Math.sin(-h);
+                double rotY = x * Math.sin(-h) + y * Math.cos(-h);
+                x = rotX;
+                y = rotY;
+            }
+
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            frontLeft.setPower((y + x + rx) / denominator);
+            backLeft.setPower((y - x + rx) / denominator);
+            frontRight.setPower((y - x - rx) / denominator);
+            backRight.setPower((y + x - rx) / denominator);
+
+            telemetry.addData("Mode", fieldCentric ? "FIELD-centric (A to switch)" : "ROBOT-centric (A to switch)");
+            telemetry.addData("Heading", "%.1f deg", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            telemetry.update();
+        }
+    }
+}
+`,
+"L10_ArmClawTeleOp.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+
+@TeleOp(name = "L10 Arm + Claw", group = "Lessons")
+public class L10_ArmClawTeleOp extends LinearOpMode {
+    // Arm motor (537.7 ticks/rev) drives the arm through a 4:1 gear reduction
+    static final double ARM_TICKS_PER_DEGREE = 537.7 * 4.0 / 360.0;
+    static final double CLAW_OPEN = 0.6;
+    static final double CLAW_CLOSED = 0.1;
+
+    @Override
+    public void runOpMode() {
+        DriveTrain driveTrain = new DriveTrain(hardwareMap);
+        DcMotor arm = hardwareMap.get(DcMotor.class, "arm");
+        Servo claw = hardwareMap.get(Servo.class, "claw");
+
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setTargetPosition(0);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm.setPower(0.7);
+
+        boolean clawClosed = false;
+        boolean lastA = false;
+        claw.setPosition(CLAW_OPEN);
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            driveTrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x);
+
+            // Arm presets on the dpad. Setting a new target never blocks the loop.
+            if (gamepad1.dpad_down)  arm.setTargetPosition(0);
+            if (gamepad1.dpad_right) arm.setTargetPosition((int) (45 * ARM_TICKS_PER_DEGREE));
+            if (gamepad1.dpad_up)    arm.setTargetPosition((int) (90 * ARM_TICKS_PER_DEGREE));
+
+            // Toggle the claw on the PRESS of A (rising edge), not while held.
+            if (gamepad1.a && !lastA) clawClosed = !clawClosed;
+            lastA = gamepad1.a;
+            claw.setPosition(clawClosed ? CLAW_CLOSED : CLAW_OPEN);
+
+            telemetry.addData("Arm", "%.1f deg (target %.0f)", arm.getCurrentPosition() / ARM_TICKS_PER_DEGREE,
+                    arm.getTargetPosition() / ARM_TICKS_PER_DEGREE);
+            telemetry.addData("Claw", clawClosed ? "CLOSED" : "open");
+            telemetry.update();
+        }
+    }
+}
+`,
+"L11_IterativeTeleOp.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+@TeleOp(name = "L11 Iterative TeleOp", group = "Lessons")
+public class L11_IterativeTeleOp extends OpMode {
+    private DriveTrain driveTrain;
+    private ElapsedTime runtime = new ElapsedTime();
+    private int loops = 0;
+
+    @Override
+    public void init() {                 // INIT pressed: runs once
+        driveTrain = new DriveTrain(hardwareMap);
+        telemetry.addLine("Initialized");
+    }
+
+    @Override
+    public void init_loop() {            // repeats until START
+        telemetry.addLine("Waiting for START...");
+    }
+
+    @Override
+    public void start() {                // START pressed: runs once
+        runtime.reset();
+    }
+
+    @Override
+    public void loop() {                 // repeats ~every few ms; must never block
+        loops++;
+        driveTrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x);
+        telemetry.addData("Runtime", "%.1f s", runtime.seconds());
+        telemetry.addData("Loops/sec", "%.0f", loops / Math.max(runtime.seconds(), 0.001));
+        // no telemetry.update() needed: OpMode calls it after every loop()
+    }
+
+    @Override
+    public void stop() {                 // STOP pressed
+        driveTrain.stop();
+    }
+}
+`
+};
+
+const NEW_FILE_TEMPLATE = (name) => HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@TeleOp(name = "${name}", group = "Mine")
+public class ${name} extends LinearOpMode {
+
+    @Override
+    public void runOpMode() {
+        DcMotor frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+
+        telemetry.addLine("Initialized");
+        telemetry.update();
+        waitForStart();
+
+        while (opModeIsActive()) {
+            telemetry.addData("Left stick Y", gamepad1.left_stick_y);
+            telemetry.update();
+        }
+    }
+}
+`;
+// ================= Java-subset → JavaScript compiler =================
+class CompileError extends Error {
+  constructor(file, line, msg) { super(msg); this.file = file; this.line = line; }
+}
+function lineAt(text, idx) { let n = 1; for (let i = 0; i < idx && i < text.length; i++) if (text.charCodeAt(i) === 10) n++; return n; }
+
+// Replace comments with spaces and string/char literals with placeholders (keeps line numbers).
+function maskSource(src) {
+  let out = '', i = 0; const n = src.length, strings = [];
+  while (i < n) {
+    const c = src[i], d = src[i + 1];
+    if (c === '/' && d === '/') { while (i < n && src[i] !== '\n') { out += ' '; i++; } continue; }
+    if (c === '/' && d === '*') {
+      out += '  '; i += 2;
+      while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { out += src[i] === '\n' ? '\n' : ' '; i++; }
+      out += '  '; i += 2; continue;
+    }
+    if (c === '"' || c === "'") {
+      let j = i + 1, s = '';
+      while (j < n && src[j] !== c && src[j] !== '\n') {
+        if (src[j] === '\\') { s += src[j] + (src[j + 1] || ''); j += 2; } else { s += src[j]; j++; }
+      }
+      strings.push(c + s + c);
+      out += '__S' + (strings.length - 1) + '__';
+      i = j + 1; continue;
+    }
+    out += c; i++;
+  }
+  return { code: out, strings };
+}
+function unmask(code, strings) { return code.replace(/__S(\d+)__/g, (_, k) => strings[+k]); }
+function stringValue(lit) { try { return lit[0] === '"' ? JSON.parse(lit) : lit.slice(1, -1); } catch (e) { return lit.slice(1, -1); } }
+
+function matchClose(s, i) {
+  const open = s[i], close = open === '{' ? '}' : open === '(' ? ')' : ']';
+  let d = 0;
+  for (let j = i; j < s.length; j++) {
+    if (s[j] === open) d++;
+    else if (s[j] === close) { d--; if (d === 0) return j; }
+  }
+  return -1;
+}
+function splitTopLevel(s, sep) {
+  const parts = []; let d = 0, start = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '(' || c === '[' || c === '{' || c === '<') d++;
+    else if (c === ')' || c === ']' || c === '}' || c === '>') d--;
+    else if (c === sep && d === 0) { parts.push(s.slice(start, i)); start = i + 1; }
+  }
+  parts.push(s.slice(start));
+  return parts;
+}
+
+const PRIM = 'boolean|byte|char|short|int|long|float|double|var|String';
+const NUMERIC = /^(byte|short|int|long|float|double|char)$/;
+const DECL_RE = new RegExp(String.raw`(?<![\w$.])(?:(?:${PRIM})|[A-Z][\w$]*(?:\.[A-Z][\w$]*)*)(?:\s*<[^;()=]*?>)?(?:\s*\[\s*\])*\s+(?=[A-Za-z_$][\w$]*\s*(?:=(?!=)|;|,|:))`, 'g');
+const KW = 'if|for|while|switch|catch|return|function|async|await|new|typeof|else|do|try|throw|case|in|of|let|const|var|instanceof|super|void|delete|yield';
+const CALL_RE = new RegExp(String.raw`(?<![\w$.])(?<!\bnew\s+)(?!(?:${KW})\b)([A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*)\s*\(`, 'g');
+
+function stmtEnd(s, j) {
+  let d = 0;
+  for (let k = j; k < s.length; k++) {
+    const c = s[k];
+    if (c === '(' || c === '[' || c === '{') d++;
+    else if (c === ')' || c === ']' || c === '}') {
+      d--;
+      if (d === 0 && c === '}') {
+        let q = k + 1; while (q < s.length && /\s/.test(s[q])) q++;
+        if (!s.startsWith('else', q)) return k;
+      }
+    } else if (c === ';' && d === 0) return k;
+  }
+  return s.length - 1;
+}
+
+// Every loop iteration yields to the simulator so physics, rendering and STOP keep working.
+function insertTicks(s) {
+  const edits = [], doEnds = new Set();
+  let m;
+  const doRe = /\bdo\s*\{/g;
+  while ((m = doRe.exec(s))) {
+    const open = m.index + m[0].length - 1;
+    edits.push({ pos: open + 1, text: ' __tick();' });
+    const close = matchClose(s, open); if (close > 0) doEnds.add(close);
+  }
+  const loopRe = /\b(while|for)\s*\(/g;
+  while ((m = loopRe.exec(s))) {
+    const popen = m.index + m[0].length - 1, pclose = matchClose(s, popen);
+    if (pclose < 0) continue;
+    if (m[1] === 'while') {
+      let k = m.index - 1; while (k >= 0 && /\s/.test(s[k])) k--;
+      if (k >= 0 && s[k] === '}' && doEnds.has(k)) continue;
+    }
+    let j = pclose + 1; while (j < s.length && /\s/.test(s[j])) j++;
+    if (s[j] === '{') edits.push({ pos: j + 1, text: ' __tick();' });
+    else if (s[j] === ';') edits.push({ pos: j, text: '{ __tick(); }', replace: 1 });
+    else { const end = stmtEnd(s, j); edits.push({ pos: j, text: '{ __tick(); ' }); edits.push({ pos: end + 1, text: ' }' }); }
+  }
+  edits.sort((a, b) => b.pos - a.pos);
+  for (const e of edits) s = s.slice(0, e.pos) + e.text + s.slice(e.pos + (e.replace || 0));
+  return s;
+}
+
+function transformExpr(s, ctx) {
+  s = s.replace(/@[A-Za-z_]\w*(?:\s*\([^)]*\))?/g, '');
+  s = s.replace(/\bfinal\s+/g, '');
+  // new T[]{a, b}  →  [a, b]
+  for (let guard = 0; guard < 50; guard++) {
+    const m = /new\s+[\w$.]+(?:\s*<[^>]*>)?\s*(?:\[\s*\]\s*)+\{/.exec(s);
+    if (!m) break;
+    const open = m.index + m[0].length - 1, close = matchClose(s, open);
+    if (close < 0) break;
+    s = s.slice(0, m.index) + '[' + s.slice(open + 1, close) + ']' + s.slice(close + 1);
+  }
+  s = s.replace(/new\s+(boolean|byte|char|short|int|long|float|double)\s*\[([^\]]+)\]/g, (_, t, n) => `__arr(${n}, ${t === 'boolean' ? 'false' : '0'})`);
+  s = s.replace(/new\s+[A-Z][\w$.]*\s*\[([^\]]+)\]/g, '__arr($1, null)');
+  s = s.replace(/new\s+([\w$.]+)\s*<[^>]*>\s*\(/g, 'new $1(');
+  s = s.replace(/\(\s*(?:int|long|short|byte|char)\s*\)\s*/g, '~~');
+  s = s.replace(/\(\s*(?:double|float)\s*\)\s*/g, '+');
+  s = s.replace(/(?<!\b(?:if|while|for|switch|catch|return)\s*)\(\s*[A-Z][a-z][\w$]*\s*\)\s*(?=[\w$(])/g, '');
+  s = s.replace(/(?<![\w$])(\d+\.?\d*(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)[fFdDlL](?![\w$])/g, '$1');
+  s = s.replace(/\b([A-Za-z_$][\w$]*)\.class\b/g, '"$1"');
+  s = s.replace(/\bnew\s+([A-Za-z_$][\w$]*)\s*\(/g, (all, name) => ctx.userClasses.has(name) ? name + '.__new(' : all);
+  s = s.replace(/(\([^()]*\)|[A-Za-z_$][\w$]*)\s*->/g, (_, p) => 'async ' + p.replace(/\b(?:int|double|boolean|long|float|String)\s+/g, '') + ' =>');
+  return s;
+}
+function transformBody(s, ctx) {
+  s = transformExpr(s, ctx);
+  s = s.replace(DECL_RE, 'let ');
+  s = s.replace(/\bfor\s*\(\s*let\s+([\w$]+)\s*:/g, 'for (let $1 of');
+  s = s.replace(/catch\s*\(\s*[\w.$|\s]+?\s+([\w$]+)\s*\)/g, 'catch ($1)');
+  s = insertTicks(s);
+  s = s.replace(CALL_RE, 'await $1(');
+  return s;
+}
+function finalExpr(s, ctx) { return transformExpr(s, ctx).replace(CALL_RE, 'await $1('); }
+
+function parseParams(p) {
+  p = p.trim(); if (!p) return [];
+  return splitTopLevel(p, ',').map(x => {
+    const m = /([A-Za-z_$][\w$]*)\s*(?:\[\s*\])*\s*$/.exec(x.replace(/@\w+/g, '').trim());
+    return m ? m[1] : '_';
+  });
+}
+
+function splitMembers(body) {
+  const members = []; let i = 0, start = 0; const n = body.length;
+  while (i < n) {
+    const c = body[i];
+    if (c === ';') { const t = body.slice(start, i); if (t.trim()) members.push({ kind: 'field', text: t, offset: start }); start = i + 1; i++; continue; }
+    if (c === '(') { const k = matchClose(body, i); i = k < 0 ? n : k + 1; continue; }
+    if (c === '{') {
+      const close = matchClose(body, i);
+      if (close < 0) throw new Error('Missing a closing } brace');
+      const head = body.slice(start, i);
+      if (/=\s*(?:new\s+[\w$.<>\s]*\[\s*\]\s*)?$/.test(head) && /=/.test(head)) { i = close + 1; continue; } // array initializer in a field
+      members.push({ kind: 'block', head, inner: body.slice(i + 1, close), offset: start });
+      i = close + 1; start = i; continue;
+    }
+    i++;
+  }
+  if (body.slice(start).trim()) throw new Error('Missing a ; near the end of the class');
+  return members;
+}
+
+function enumNames(body) {
+  const first = body.split(';')[0];
+  return first.split(',').map(x => x.trim()).filter(Boolean).map(x => (/^[A-Za-z_$][\w$]*/.exec(x) || [''])[0]).filter(Boolean);
+}
+
+function compileClass(cls, ctx, file, masked) {
+  const lineOf = (off) => lineAt(masked, cls.bodyOffset + off);
+  let members;
+  try { members = splitMembers(cls.body); } catch (e) { throw new CompileError(file, cls.line, e.message); }
+  const staticCode = [], instCode = [], methods = new Map(), staticMethods = new Map(), ctors = [];
+  for (const mem of members) {
+    if (mem.kind === 'field') {
+      let t = mem.text.replace(/@[A-Za-z_]\w*(?:\s*\([^)]*\))?/g, '').trim();
+      const mods = /^((?:(?:public|private|protected|static|final|volatile|transient)\s+)*)/.exec(t)[1];
+      const isStatic = /\bstatic\b/.test(mods);
+      t = t.slice(mods.length);
+      const tm = /^([\w$.]+(?:\s*<[^=;]*?>)?(?:\s*\[\s*\])*)\s+/.exec(t);
+      if (!tm) throw new CompileError(file, lineOf(mem.offset), `Can't read this line as a field declaration: "${unmask(mem.text.trim(), ctx.strings).slice(0, 60)}"`);
+      const type = tm[1].replace(/\s+/g, '');
+      const def = /\[\]/.test(type) ? 'null' : NUMERIC.test(type) ? '0' : type === 'boolean' ? 'false' : 'null';
+      for (const d of splitTopLevel(t.slice(tm[0].length), ',')) {
+        const dm = /^\s*([A-Za-z_$][\w$]*)\s*(?:\[\s*\])?\s*(?:=\s*([\s\S]*))?$/.exec(d);
+        if (!dm) throw new CompileError(file, lineOf(mem.offset), 'Could not read a field declaration');
+        let init = dm[2] != null ? dm[2].trim() : def;
+        if (/^\{/.test(init)) init = '[' + init.slice(1, -1) + ']';
+        const line = `${isStatic ? '__statics' : 'self'}.${dm[1]} = ${finalExpr(init, ctx)};`;
+        (isStatic ? staticCode : instCode).push(line);
+      }
+    } else {
+      let head = mem.head.replace(/@[A-Za-z_]\w*(?:\s*\([^)]*\))?/g, '').trim();
+      const en = /\benum\s+([A-Za-z_$][\w$]*)/.exec(head);
+      if (en) { staticCode.push(`__statics.${en[1]} = __enum(${JSON.stringify(enumNames(mem.inner))}, __statics);`); continue; }
+      if (/\b(class|interface)\b/.test(head)) throw new CompileError(file, lineOf(mem.offset), 'Inner classes are not supported in the simulator. Move it to its own file.');
+      if (/^static$/.test(head)) { staticCode.push(transformBody(mem.inner, ctx)); continue; }
+      const mm = /([A-Za-z_$][\w$]*)\s*\(([\s\S]*)\)\s*(?:throws[\w\s,.]+)?$/.exec(head);
+      if (!mm) throw new CompileError(file, lineOf(mem.offset), `Can't read this method header: "${head.slice(0, 60)}"`);
+      const name = mm[1], params = parseParams(mm[2]);
+      const isStatic = /\bstatic\b/.test(head.slice(0, mm.index));
+      const before = head.slice(0, mm.index).replace(/\b(public|private|protected|static|final|abstract|synchronized)\b/g, '').trim();
+      const fn = `async function(${params.join(', ')}) {${transformBody(mem.inner, ctx)}\n}`;
+      if (name === cls.name && before === '') ctors.push({ params, fn });
+      else {
+        const map = isStatic ? staticMethods : methods;
+        if (!map.has(name)) map.set(name, []);
+        map.get(name).push({ params, fn });
+      }
+    }
+  }
+  const emitGroup = (target, name, list) => {
+    if (list.length === 1) return `${target}.${name} = ${list[0].fn};`;
+    const cases = list.map((x, i) => `case ${x.params.length}: return __f${i}.apply(this, a);`).join(' ');
+    return `{ ${list.map((x, i) => `const __f${i} = ${x.fn};`).join('\n')}\n${target}.${name} = async function(...a) { switch (a.length) { ${cases} } throw new Error('No version of ${name}() takes ' + a.length + ' arguments'); }; }`;
+  };
+  const statMeth = [...staticMethods].map(([n, l]) => emitGroup('__statics', n, l));
+  const instMeth = [...methods].map(([n, l]) => emitGroup('self', n, l));
+  const ctorCode = ctors.length ? emitGroup('__c', 'ctor', ctors) : '';
+  return `__defineClass(${JSON.stringify({ name: cls.name, base: cls.base, ann: cls.ann, file })}, async function(__statics) {
+with (__statics) {
+${staticCode.join('\n')}
+${statMeth.join('\n')}
+}
+return async function(self) {
+const __c = {};
+with (__statics) with (self) {
+${instCode.join('\n')}
+${instMeth.join('\n')}
+${ctorCode}
+}
+return __c.ctor || null;
+};
+});`;
+}
+
+function parseAnnotations(text, strings) {
+  const ann = {};
+  const re = /@(\w+)(?:\s*\(([^)]*)\))?/g; let m;
+  while ((m = re.exec(text))) {
+    const kind = m[1];
+    if (kind === 'TeleOp' || kind === 'Autonomous') {
+      ann.type = kind;
+      const args = m[2] || '';
+      const nm = /name\s*=\s*(__S\d+__)/.exec(args) || /^\s*(__S\d+__)\s*$/.exec(args);
+      const gm = /group\s*=\s*(__S\d+__)/.exec(args);
+      if (nm) ann.name = stringValue(unmask(nm[1], strings));
+      if (gm) ann.group = stringValue(unmask(gm[1], strings));
+    }
+    if (kind === 'Disabled') ann.disabled = true;
+  }
+  return ann;
+}
+
+function compileFile(file, src, userClasses) {
+  const { code: masked0, strings } = maskSource(src);
+  const masked = masked0.replace(/^[ \t]*(package|import)\b[^;]*;/gm, m => m.replace(/[^\n]/g, ' '));
+  const ctx = { userClasses, strings };
+  const out = [], classes = [];
+  const re = /((?:@\w+(?:\s*\([^)]*\))?\s*)*)((?:(?:public|private|protected|abstract|final|static)\s+)*)(class|enum|interface)\s+([A-Za-z_$][\w$]*)([^{]*)\{/g;
+  let m;
+  while ((m = re.exec(masked))) {
+    const open = m.index + m[0].length - 1, close = matchClose(masked, open);
+    if (close < 0) throw new CompileError(file, lineAt(masked, open), `Class ${m[4]} is missing its closing }`);
+    const kind = m[3], name = m[4], header = m[5];
+    if (kind === 'interface') throw new CompileError(file, lineAt(masked, m.index), 'Interfaces are not supported in the simulator.');
+    if (kind === 'enum') { out.push(`__G.${name} = __enum(${JSON.stringify(enumNames(masked.slice(open + 1, close)))}, __G);`); re.lastIndex = close + 1; continue; }
+    const ext = /extends\s+([A-Za-z_$][\w$]*)/.exec(header);
+    const cls = { name, base: ext ? ext[1] : null, ann: parseAnnotations(m[1], strings), body: masked.slice(open + 1, close), bodyOffset: open + 1, line: lineAt(masked, m.index) };
+    out.push(compileClass(cls, ctx, file, masked));
+    classes.push(name);
+    re.lastIndex = close + 1;
+  }
+  const rest = masked.replace(re, '');
+  if (!classes.length && !out.length) throw new CompileError(file, 1, 'No class found in this file.');
+  return { js: unmask(out.join('\n'), strings), classes };
+}
+
+function prescanClassNames(files) {
+  const names = new Set();
+  for (const src of Object.values(files)) {
+    const { code } = maskSource(src);
+    const re = /\bclass\s+([A-Za-z_$][\w$]*)/g; let m;
+    while ((m = re.exec(code))) names.add(m[1]);
+  }
+  return names;
+}
+// ================= SDK shims, hardware, physics =================
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+};
+const clip = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const nowMs = () => performance.now();
+const normDeg = (d) => { d = ((d + 180) % 360 + 360) % 360 - 180; return d === -180 ? 180 : d; };
+const normRad = (r) => normDeg(r * 180 / Math.PI) * Math.PI / 180;
+
+const MOTORS = {
+  '312': { rpm: 312, tpr: 537.7 }, '435': { rpm: 435, tpr: 384.5 }, '223': { rpm: 223, tpr: 751.8 }, 'hd20': { rpm: 300, tpr: 560 }
+};
+const DEFAULT_CFG = `motor frontLeft FL
+motor frontRight FR
+motor backLeft BL
+motor backRight BR
+imu imu
+motor arm
+servo claw
+distance frontDistance
+touch frontBumper`;
+
+const settings = Object.assign({ drive: 'tank', motor: '312', wheel: '3.7795', mirror: true, variation: true, speed: '1', cfg: DEFAULT_CFG }, store.get('bbsim.settings', {}));
+function saveSettings() { store.set('bbsim.settings', settings); }
+
+// ---------- Java-style string formatting ----------
+function jformat(fmt, ...args) {
+  if (fmt && typeof fmt === 'object' && fmt.__locale) { fmt = args.shift(); }
+  let ai = 0;
+  return String(fmt).replace(/%([-+ 0,(#]*)(\d+)?(?:\.(\d+))?([dfsbxXneS%])/g, (all, flags, width, prec, conv) => {
+    if (conv === '%') return '%';
+    if (conv === 'n') return '\n';
+    let v = args[ai++], s;
+    switch (conv) {
+      case 'd': s = String(Math.trunc(Number(v))); break;
+      case 'f': s = Number(v).toFixed(prec != null ? +prec : 6); break;
+      case 'e': s = Number(v).toExponential(prec != null ? +prec : 6); break;
+      case 'x': case 'X': s = (Math.trunc(Number(v)) >>> 0).toString(16); if (conv === 'X') s = s.toUpperCase(); break;
+      case 'b': s = String(!!v); break;
+      default: s = v == null ? 'null' : String(v); if (prec != null) s = s.slice(0, +prec); if (conv === 'S') s = s.toUpperCase();
+    }
+    if (flags.includes('+') && /^[0-9]/.test(s) && conv !== 's') s = '+' + s;
+    if (width && s.length < +width) s = flags.includes('-') ? s.padEnd(+width) : (flags.includes('0') ? s.padStart(+width, '0') : s.padStart(+width));
+    return s;
+  });
+}
+function jstr(v) {
+  if (v === null || v === undefined) return 'null';
+  if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(v);
+  if (typeof v === 'object' && v.__toString) return v.__toString();
+  return String(v);
+}
+if (!String.prototype.equals) {
+  Object.defineProperty(String.prototype, 'equals', { value: function (o) { return String(this) === String(o); } });
+  Object.defineProperty(String.prototype, 'equalsIgnoreCase', { value: function (o) { return String(this).toLowerCase() === String(o).toLowerCase(); } });
+  Object.defineProperty(String.prototype, 'name', { value: function () { return String(this); } });
+  Object.defineProperty(String.prototype, 'isEmpty', { value: function () { return this.length === 0; } });
+  Object.defineProperty(String.prototype, 'contains', { value: function (o) { return String(this).includes(o); } });
+}
+
+// ---------- run state ----------
+const run = {
+  state: 'idle', token: 0, stopRequested: false, stopAt: 0, startAt: 0, initAt: 0, kind: null, className: null, annType: null,
+  instantiated: new Set(), loops: 0, loopWindowStart: 0, loopHz: 0, io: false, lastYield: 0, startWaiters: [], matchEnd: 0,
+  telemetryShown: [], telemetryUpdates: 0
+};
+class OpModeKilled extends Error { constructor(msg) { super(msg || 'OpMode stopped'); this.killed = true; } }
+
+const chan = new MessageChannel(); const yq = [];
+chan.port1.onmessage = () => { const r = yq.shift(); if (r) r(); };
+const yieldNow = () => new Promise(r => { yq.push(r); chan.port2.postMessage(0); });
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+function checkAlive(token) {
+  if (token !== run.token) throw new OpModeKilled('OpMode replaced');
+  if (run.stopRequested && nowMs() - run.stopAt > 1500) {
+    if (!run.stuckWarned) { run.stuckWarned = true; log('warn', 'Your OpMode kept running for 1.5 s after STOP. On a real robot the app would show "stuck in stop()" and restart the robot controller. Check opModeIsActive() in every loop.'); }
+    throw new OpModeKilled('force-stopped');
+  }
+}
+async function __tick() {
+  const token = run.token;
+  checkAlive(token);
+  run.loops++;
+  const t = nowMs();
+  if (run.io && t - (run.lastWait || 0) > 3) { run.io = false; run.lastYield = run.lastWait = t; await wait(4); }
+  else if (t - run.lastYield > 6) { run.lastYield = t; await yieldNow(); }
+  checkAlive(token);
+}
+
+// ---------- Telemetry ----------
+function makeTelemetry() {
+  let pending = [], autoClear = true;
+  const item = () => ({ setValue() { return this; }, setRetained() { return this; }, setCaption() { return this; }, addData() { return this; } });
+  const t = {
+    addData(caption, ...rest) {
+      let value;
+      if (rest.length >= 2 && typeof rest[0] === 'string' && rest[0].includes('%')) value = jformat(rest[0], ...rest.slice(1));
+      else if (rest.length >= 2 && rest[0] && rest[0].__locale) value = jformat(...rest);
+      else value = rest.length ? jstr(rest[0]) : '';
+      pending.push({ caption: jstr(caption), value });
+      run.io = true;
+      return item();
+    },
+    addLine(s) { pending.push({ line: s == null ? '' : jstr(s) }); return item(); },
+    update() { run.telemetryShown = pending.slice(); run.telemetryUpdates++; if (autoClear) pending = []; renderTelemetry(); run.io = true; return true; },
+    clear() { pending = []; }, clearAll() { pending = []; run.telemetryShown = []; renderTelemetry(); },
+    setAutoClear(b) { autoClear = !!b; }, isAutoClear() { return autoClear; },
+    setMsTransmissionInterval() {}, getMsTransmissionInterval() { return 250; }, speak() {}, setDisplayFormat() {}, setCaptionValueSeparator() {}, setItemSeparator() {},
+    log() { return { add: (...a) => log('info', a.length > 1 ? jformat(...a) : jstr(a[0])), clear() {}, setCapacity() {}, setDisplayOrder() {} }; },
+    _pending: () => pending
+  };
+  return t;
+}
+
+// ---------- Gamepads ----------
+const BTN = ['a', 'b', 'x', 'y', 'dpad_up', 'dpad_down', 'dpad_left', 'dpad_right', 'left_bumper', 'right_bumper', 'start', 'back', 'guide', 'left_stick_button', 'right_stick_button'];
+function makeGamepad(id) {
+  const g = { id, left_stick_x: 0, left_stick_y: 0, right_stick_x: 0, right_stick_y: 0, left_trigger: 0, right_trigger: 0, _press: {}, _release: {} };
+  for (const b of BTN) g[b] = false;
+  const alias = { cross: 'a', circle: 'b', square: 'x', triangle: 'y', options: 'start', share: 'back', ps: 'guide' };
+  for (const [k, v] of Object.entries(alias)) Object.defineProperty(g, k, { get() { return g[v]; } });
+  const cap = (s) => s.replace(/_(\w)/g, (_, c) => c.toUpperCase());
+  for (const b of BTN) {
+    g[cap(b) + 'WasPressed'] = () => { const v = !!g._press[b]; g._press[b] = false; return v; };
+    g[cap(b) + 'WasReleased'] = () => { const v = !!g._release[b]; g._release[b] = false; return v; };
+  }
+  g.atRest = () => Math.abs(g.left_stick_x) < .05 && Math.abs(g.left_stick_y) < .05 && Math.abs(g.right_stick_x) < .05 && Math.abs(g.right_stick_y) < .05 && g.left_trigger < .05 && g.right_trigger < .05;
+  g.rumble = () => { log('info', `gamepad${id}.rumble()`); }; g.rumbleBlips = g.rumble; g.stopRumble = () => {}; g.setLedColor = () => {}; g.isRumbling = () => false;
+  g._set = (state) => {
+    for (const b of BTN) {
+      const nv = !!state[b];
+      if (nv && !g[b]) g._press[b] = true;
+      if (!nv && g[b]) g._release[b] = true;
+      g[b] = nv;
+    }
+    for (const k of ['left_stick_x', 'left_stick_y', 'right_stick_x', 'right_stick_y', 'left_trigger', 'right_trigger']) g[k] = state[k] || 0;
+  };
+  return g;
+}
+const gamepad1 = makeGamepad(1), gamepad2 = makeGamepad(2);
+
+// ---------- Simulated robot ----------
+const ROBOT = 18, HALF = 9, FIELD = 144, FH = 72;
+const sim = {
+  pose: { x: 0, y: -48, h: Math.PI / 2 }, start: { x: 0, y: -48, h: Math.PI / 2 },
+  trail: [], motors: [], servos: [], imu: null, imuZero: Math.PI / 2, wall: false, speed: 0, omega: 0, wheelSpeeds: { FL: 0, FR: 0, BL: 0, BR: 0 },
+  devices: [], armAngle: 0, armUsed: false, claw: null
+};
+function motorSpec() { return MOTORS[settings.motor] || MOTORS['312']; }
+
+function parseConfig(text) {
+  const out = [], errors = [], names = new Set();
+  text.split('\n').forEach((raw, i) => {
+    const line = raw.replace(/#.*/, '').trim(); if (!line) return;
+    const [type, name, slot] = line.split(/\s+/);
+    if (!/^(motor|servo|crservo|imu|distance|touch)$/.test(type)) { errors.push(`Line ${i + 1}: unknown type "${type}"`); return; }
+    if (!name) { errors.push(`Line ${i + 1}: missing a name`); return; }
+    if (names.has(name)) { errors.push(`Line ${i + 1}: "${name}" is used twice`); return; }
+    names.add(name);
+    out.push({ type, name, slot: slot ? slot.toUpperCase() : null });
+  });
+  return { devices: out, errors };
+}
+
+const TYPE_OK = {
+  motor: ['DcMotor', 'DcMotorEx', 'DcMotorSimple', 'DcMotorImplEx'],
+  servo: ['Servo', 'ServoImplEx', 'ServoImpl'],
+  crservo: ['CRServo', 'CRServoImplEx', 'DcMotorSimple'],
+  imu: ['IMU', 'BHI260IMU', 'BNO055IMUNew'],
+  distance: ['DistanceSensor', 'Rev2mDistanceSensor', 'DistanceSensorEx'],
+  touch: ['TouchSensor', 'DigitalChannel', 'RevTouchSensor']
+};
+
+function enumObj(names) { const o = {}; for (const n of names) o[n] = n; return Object.freeze(o); }
+const RunMode = enumObj(['RUN_WITHOUT_ENCODER', 'RUN_USING_ENCODER', 'RUN_TO_POSITION', 'STOP_AND_RESET_ENCODER', 'RESET_ENCODERS', 'RUN_USING_ENCODERS', 'RUN_WITHOUT_ENCODERS']);
+const ZeroPowerBehavior = enumObj(['BRAKE', 'FLOAT', 'UNKNOWN']);
+const Direction = enumObj(['FORWARD', 'REVERSE']);
+
+function makeMotor(dev, variation) {
+  const spec = motorSpec();
+  const m = { dev, name: dev.name, slot: dev.slot, dir: 1, mode: 'RUN_WITHOUT_ENCODER', power: 0, target: 0, targetSet: false, tol: 5,
+    shaftPos: 0, shaftVel: 0, zpb: 'BRAKE', var: variation ? 1 + (Math.random() * 2 - 1) * 0.035 : 1, tpr: spec.tpr, rpm: spec.rpm, used: false, velCmd: null };
+  const pos = () => Math.round(m.shaftPos * m.dir);
+  const api = {
+    setPower(p) { run.io = true; m.used = true; m.velCmd = null; m.power = clip(Number(p) || 0, -1, 1); },
+    getPower() { return m.power; },
+    setDirection(d) { m.dir = d === 'REVERSE' ? -1 : 1; },
+    getDirection() { return m.dir < 0 ? 'REVERSE' : 'FORWARD'; },
+    setMode(mode) {
+      run.io = true;
+      if (mode === 'RESET_ENCODERS') mode = 'STOP_AND_RESET_ENCODER';
+      if (mode === 'RUN_USING_ENCODERS') mode = 'RUN_USING_ENCODER';
+      if (mode === 'RUN_WITHOUT_ENCODERS') mode = 'RUN_WITHOUT_ENCODER';
+      if (mode === 'RUN_TO_POSITION' && !m.targetSet) {
+        const e = new Error(`TargetPositionNotSetException: Failed to enable RUN_TO_POSITION on motor "${m.name}" because no target position was set. Call setTargetPosition() BEFORE setMode(RUN_TO_POSITION).`);
+        e.sdk = true; throw e;
+      }
+      if (mode === 'STOP_AND_RESET_ENCODER') { m.shaftPos = 0; m.shaftVel = 0; }
+      m.mode = mode;
+    },
+    getMode() { return m.mode; },
+    setTargetPosition(t) { m.target = Math.trunc(Number(t) || 0); m.targetSet = true; },
+    getTargetPosition() { return m.target; },
+    getCurrentPosition() { run.io = true; return pos(); },
+    isBusy() { run.io = true; return m.mode === 'RUN_TO_POSITION' && Math.abs(m.target - pos()) > m.tol; },
+    setZeroPowerBehavior(z) { m.zpb = z; }, getZeroPowerBehavior() { return m.zpb; },
+    setTargetPositionTolerance(t) { m.tol = Math.abs(t); }, getTargetPositionTolerance() { return m.tol; },
+    getVelocity(unit) { const v = m.shaftVel * m.dir; return unit === 'DEGREES' ? v / m.tpr * 360 : unit === 'RADIANS' ? v / m.tpr * 2 * Math.PI : v; },
+    setVelocity(v, unit) { m.used = true; let tps = Number(v) || 0; if (unit === 'DEGREES') tps = tps / 360 * m.tpr; if (unit === 'RADIANS') tps = tps / (2 * Math.PI) * m.tpr; m.velCmd = tps; m.power = clip(tps / (m.rpm / 60 * m.tpr), -1, 1); },
+    getCurrent() { return Math.abs(m.shaftVel) / (m.rpm / 60 * m.tpr) * 2 + Math.abs(m.power) * 1.5; },
+    setMotorEnable() {}, setMotorDisable() {}, isMotorEnabled() { return true; }, isOverCurrent() { return false; },
+    setPositionPIDFCoefficients() {}, setVelocityPIDFCoefficients() {}, setPIDFCoefficients() {},
+    getDeviceName() { return m.name; }, getPortNumber() { return 0; }, getConnectionInfo() { return 'sim'; },
+    getMotorType() { return { getTicksPerRev: () => m.tpr, getMaxRPM: () => m.rpm, getAchieveableMaxTicksPerSecond: () => m.rpm / 60 * m.tpr }; },
+    resetDeviceConfigurationForOpMode() {}, close() {}, __toString() { return 'DcMotor ' + m.name; }
+  };
+  m.api = api;
+  return m;
+}
+function makeServo(dev, cont) {
+  const s = { dev, name: dev.name, pos: null, dir: 1, lo: 0, hi: 1, power: 0, cont, angle: 0, used: false };
+  s.api = cont ? {
+    setPower(p) { s.used = true; s.power = clip(Number(p) || 0, -1, 1); }, getPower() { return s.power; },
+    setDirection(d) { s.dir = d === 'REVERSE' ? -1 : 1; }, getDirection() { return s.dir < 0 ? 'REVERSE' : 'FORWARD'; },
+    getDeviceName() { return s.name; }, __toString() { return 'CRServo ' + s.name; }
+  } : {
+    setPosition(p) { run.io = true; s.used = true; s.pos = clip(Number(p) || 0, 0, 1); },
+    getPosition() { return s.pos == null ? Number.NaN : s.pos; },
+    setDirection(d) { s.dir = d === 'REVERSE' ? -1 : 1; }, getDirection() { return s.dir < 0 ? 'REVERSE' : 'FORWARD'; },
+    scaleRange(lo, hi) { s.lo = clip(lo, 0, 1); s.hi = clip(hi, 0, 1); },
+    getDeviceName() { return s.name; }, getPortNumber() { return 0; }, getController() { return { pwmEnable() {}, pwmDisable() {} }; },
+    setPwmRange() {}, setPwmEnable() {}, setPwmDisable() {}, __toString() { return 'Servo ' + s.name; }
+  };
+  return s;
+}
+function physicalServoPos(s) { if (s.pos == null) return null; const p = s.dir < 0 ? 1 - s.pos : s.pos; return s.lo + p * (s.hi - s.lo); }
+
+function yawDeg() { return normDeg((sim.pose.h - sim.imuZero) * 180 / Math.PI); }
+function makeImu(dev) {
+  const imu = { dev, name: dev.name, initialized: false };
+  const angles = () => {
+    const yaw = yawDeg();
+    return {
+      getYaw(u) { return u === 'RADIANS' ? yaw * Math.PI / 180 : yaw; },
+      getPitch() { return 0; }, getRoll() { return 0; }, getAcquisitionTime() { return 0; },
+      __toString() { return `{yaw=${yaw.toFixed(3)}, pitch=0.000, roll=0.000}`; }
+    };
+  };
+  imu.api = {
+    initialize() { imu.initialized = true; return true; },
+    resetYaw() { sim.imuZero = sim.pose.h; },
+    getRobotYawPitchRollAngles: angles,
+    getRobotOrientation(ref, order, unit) { const y = yawDeg(); const v = unit === 'RADIANS' ? y * Math.PI / 180 : y; return { firstAngle: v, secondAngle: 0, thirdAngle: 0, angleUnit: unit || 'DEGREES' }; },
+    getRobotAngularVelocity(unit) { const w = sim.omega * 180 / Math.PI; return { zRotationRate: unit === 'RADIANS' ? sim.omega : w, xRotationRate: 0, yRotationRate: 0, unit: unit || 'DEGREES' }; },
+    getRobotOrientationAsQuaternion() { return { w: Math.cos(yawDeg() * Math.PI / 360), x: 0, y: 0, z: Math.sin(yawDeg() * Math.PI / 360) }; },
+    getDeviceName() { return imu.name; }, close() {}
+  };
+  return imu;
+}
+function frontDistanceIn() {
+  const { x, y, h } = sim.pose;
+  const px = x + Math.cos(h) * HALF, py = y + Math.sin(h) * HALF, dx = Math.cos(h), dy = Math.sin(h);
+  let t = Infinity;
+  if (dx > 1e-6) t = Math.min(t, (FH - px) / dx); if (dx < -1e-6) t = Math.min(t, (-FH - px) / dx);
+  if (dy > 1e-6) t = Math.min(t, (FH - py) / dy); if (dy < -1e-6) t = Math.min(t, (-FH - py) / dy);
+  return Math.max(0, t);
+}
+const DistanceUnit = Object.freeze({ INCH: 'INCH', CM: 'CM', MM: 'MM', METER: 'METER' });
+function convertIn(v, unit) { return unit === 'CM' ? v * 2.54 : unit === 'MM' ? v * 25.4 : unit === 'METER' ? v * 0.0254 : v; }
+function makeDistance(dev) {
+  return { dev, api: {
+    getDistance(unit) { run.io = true; const d = frontDistanceIn(); const v = d > 78 ? 127.95 : d + (Math.random() - .5) * 0.2; return convertIn(v, unit); },
+    getDeviceName() { return dev.name; }, __toString() { return 'DistanceSensor ' + dev.name; }
+  } };
+}
+function makeTouch(dev) {
+  const pressed = () => sim.wall && frontDistanceIn() < 0.6;
+  return { dev, api: {
+    isPressed() { run.io = true; return pressed(); }, getValue() { return pressed() ? 1 : 0; },
+    getState() { return !pressed(); }, setMode() {}, getDeviceName() { return dev.name; }
+  } };
+}
+
+let hwDevices = new Map();
+function buildHardware() {
+  const { devices, errors } = parseConfig(settings.cfg);
+  if (errors.length) log('warn', 'Robot configuration: ' + errors.join('; '));
+  hwDevices = new Map();
+  sim.motors = []; sim.servos = []; sim.armUsed = false;
+  for (const d of devices) {
+    let obj;
+    if (d.type === 'motor') { obj = makeMotor(d, settings.variation); sim.motors.push(obj); }
+    else if (d.type === 'servo' || d.type === 'crservo') { obj = makeServo(d, d.type === 'crservo'); sim.servos.push(obj); }
+    else if (d.type === 'imu') obj = makeImu(d);
+    else if (d.type === 'distance') obj = makeDistance(d);
+    else if (d.type === 'touch') obj = makeTouch(d);
+    hwDevices.set(d.name, obj);
+  }
+  sim.imuZero = sim.pose.h;
+}
+function hwGet(type, name) {
+  if (name === undefined) { name = type; type = null; }
+  const d = hwDevices.get(name);
+  const typeName = String(type || 'device');
+  if (!d || (type && TYPE_OK[d.dev.type] && !TYPE_OK[d.dev.type].includes(typeName) && !['HardwareDevice', 'Object'].includes(typeName))) {
+    const known = [...hwDevices.keys()];
+    const near = known.find(k => k.toLowerCase() === String(name).toLowerCase());
+    const e = new Error(`Unable to find a hardware device with name "${name}" and type ${typeName}` + (near ? `. Did you mean "${near}"? Names are case-sensitive.` : `. Check the Robot setup tab: the configuration has ${known.join(', ') || 'no devices'}.`));
+    e.sdk = true; throw e;
+  }
+  run.io = true;
+  return d.api;
+}
+const hardwareMap = {
+  get: hwGet,
+  tryGet(type, name) { try { return hwGet(type, name); } catch (e) { return null; } },
+  dcMotor: { get: (n) => hwGet('DcMotor', n) }, servo: { get: (n) => hwGet('Servo', n) }, crservo: { get: (n) => hwGet('CRServo', n) },
+  voltageSensor: { iterator: () => { let done = false; return { hasNext: () => !done, next: () => { done = true; return { getVoltage: () => 12.9 + (Math.random() - .5) * .1 }; } }; }, get: () => ({ getVoltage: () => 12.9 }) },
+  getAll() { return []; }, appContext: {}
+};
+
+// ---------- ElapsedTime etc. ----------
+class ElapsedTime {
+  constructor(res) { this._res = res === 'MILLISECONDS' ? 'ms' : 's'; this._t0 = nowMs(); }
+  reset() { this._t0 = nowMs(); }
+  seconds() { return (nowMs() - this._t0) / 1000; }
+  milliseconds() { return nowMs() - this._t0; }
+  nanoseconds() { return (nowMs() - this._t0) * 1e6; }
+  time(unit) { if (unit === 'MILLISECONDS') return this.milliseconds(); if (unit === 'SECONDS') return this.seconds(); return this._res === 'ms' ? this.milliseconds() : this.seconds(); }
+  startTime() { return this._t0 / 1000; }
+  __toString() { return this.seconds().toFixed(4) + ' seconds'; }
+  toString() { return this.__toString(); }
+}
+ElapsedTime.Resolution = Object.freeze({ SECONDS: 'SECONDS', MILLISECONDS: 'MILLISECONDS' });
+const JMath = Object.assign(Object.create(Math), {
+  toRadians: (d) => d * Math.PI / 180, toDegrees: (r) => r * 180 / Math.PI, signum: (x) => Math.sign(x),
+  floorDiv: (a, b) => Math.floor(a / b), floorMod: (a, b) => ((a % b) + b) % b, clamp: (v, lo, hi) => clip(v, lo, hi)
+});
+class ArrayList extends Array {
+  add(x, y) { if (y === undefined) this.push(x); else this.splice(x, 0, y); return true; }
+  get(i) { return this[i]; } set(i, v) { this[i] = v; } size() { return this.length; } isEmpty() { return this.length === 0; }
+  remove(i) { return this.splice(i, 1)[0]; } clear() { this.length = 0; } contains(x) { return this.includes(x); }
+}
+function __arr(n, fill) { return new Array(Math.trunc(n)).fill(fill); }
+function __enum(names, scope) {
+  const o = {}; names.forEach((n, i) => { o[n] = n; if (scope && !(n in scope)) scope[n] = n; });
+  o.values = () => names.slice(); o.valueOf = (s) => names.includes(s) ? s : null;
+  return o;
+}
+
+async function opSleep(ms) {
+  const token = run.token, end = nowMs() + Number(ms || 0);
+  while (nowMs() < end) {
+    checkAlive(token);
+    if (run.stopRequested) return;
+    await wait(Math.min(10, end - nowMs()));
+  }
+  run.lastYield = nowMs();
+}
+
+function makeOpModeBase() {
+  const b = Object.create(null);
+  b.hardwareMap = hardwareMap; b.telemetry = run.telemetry; b.gamepad1 = gamepad1; b.gamepad2 = gamepad2;
+  b.waitForStart = async () => {
+    const token = run.token;
+    while (run.state === 'init' && !run.stopRequested) { checkAlive(token); await wait(10); }
+    checkAlive(token);
+  };
+  b.opModeIsActive = () => { run.io = true; return run.state === 'running' && !run.stopRequested; };
+  b.opModeInInit = () => { run.io = true; return run.state === 'init' && !run.stopRequested; };
+  b.isStarted = () => run.state === 'running';
+  b.isStopRequested = () => { run.io = true; return run.stopRequested; };
+  b.sleep = opSleep; b.idle = async () => { await yieldNow(); };
+  b.getRuntime = () => (nowMs() - run.initAt) / 1000;
+  b.resetRuntime = () => { run.initAt = nowMs(); };
+  b.requestOpModeStop = () => requestStop('code'); b.terminateOpModeNow = () => { requestStop('code'); throw new OpModeKilled('terminateOpModeNow'); };
+  b.time = 0; b.msStuckDetectStop = 1500;
+  return b;
+}
+
+// ---------- class registry ----------
+const classes = new Map();
+const G = Object.create(null);
+Object.assign(G, {
+  DcMotor: { RunMode, ZeroPowerBehavior, Direction }, DcMotorEx: { RunMode, ZeroPowerBehavior, Direction }, DcMotorSimple: { Direction },
+  Servo: { Direction, MIN_POSITION: 0, MAX_POSITION: 1 }, CRServo: { Direction },
+  IMU: { Parameters: class { constructor(o) { this.orientation = o; } } },
+  RevHubOrientationOnRobot: Object.assign(class { constructor(a, b) { this.logo = a; this.usb = b; } }, {
+    LogoFacingDirection: enumObj(['UP', 'DOWN', 'LEFT', 'RIGHT', 'FORWARD', 'BACKWARD']),
+    UsbFacingDirection: enumObj(['UP', 'DOWN', 'LEFT', 'RIGHT', 'FORWARD', 'BACKWARD'])
+  }),
+  AngleUnit: { DEGREES: 'DEGREES', RADIANS: 'RADIANS', normalizeDegrees: normDeg, normalizeRadians: normRad },
+  AxesReference: enumObj(['INTRINSIC', 'EXTRINSIC']), AxesOrder: enumObj(['ZYX', 'XYZ', 'ZXY', 'XZY', 'YXZ', 'YZX']),
+  DistanceUnit, CurrentUnit: enumObj(['AMPS', 'MILLIAMPS']),
+  ElapsedTime, ArrayList, LinkedList: ArrayList,
+  Range: { clip, scale: (n, x1, x2, y1, y2) => y1 + (n - x1) * (y2 - y1) / (x2 - x1), throwIfRangeIsInvalid() {} },
+  Math: JMath,
+  String: { format: jformat, valueOf: (v) => jstr(v), join: (sep, ...a) => (Array.isArray(a[0]) ? a[0] : a).join(sep) },
+  Double: { parseDouble: parseFloat, valueOf: Number, MAX_VALUE: Number.MAX_VALUE, MIN_VALUE: Number.MIN_VALUE, POSITIVE_INFINITY: Infinity, NEGATIVE_INFINITY: -Infinity, NaN: NaN, isNaN: Number.isNaN, compare: (a, b) => a - b },
+  Integer: { parseInt: (s) => parseInt(s, 10), valueOf: Number, MAX_VALUE: 2147483647, MIN_VALUE: -2147483648, toString: (v) => String(v) },
+  Boolean: { parseBoolean: (s) => String(s).toLowerCase() === 'true', valueOf: Boolean },
+  Locale: { US: { __locale: true }, ENGLISH: { __locale: true }, getDefault: () => ({ __locale: true }) },
+  Arrays: { asList: (...a) => ArrayList.from(Array.isArray(a[0]) && a.length === 1 ? a[0] : a), fill: (arr, v) => arr.fill(v), toString: (a) => '[' + a.join(', ') + ']' },
+  System: { out: { println: (...a) => log('info', a.map(jstr).join('')), print: (...a) => log('info', a.map(jstr).join('')), printf: (...a) => log('info', jformat(...a)) }, currentTimeMillis: () => Date.now(), nanoTime: () => nowMs() * 1e6 },
+  Thread: { sleep: (ms) => opSleep(ms), currentThread: () => ({ isInterrupted: () => run.stopRequested, interrupt() {} }) },
+  RobotLog: { d: (...a) => log('info', jformat(...a)), i: (...a) => log('info', jformat(...a)), e: (...a) => log('err', jformat(...a)), w: (...a) => log('warn', jformat(...a)) },
+  __tick, __arr, __enum
+});
+
+function __defineClass(meta, factory) {
+  if (classes.has(meta.name) && classes.get(meta.name).file !== meta.file) throw new CompileError(meta.file, 1, `Class ${meta.name} is also defined in ${classes.get(meta.name).file}. Class names must be unique.`);
+  classes.set(meta.name, { meta, factory, file: meta.file, init: null, statics: null });
+}
+function isOpModeRoot(name) { return name === 'LinearOpMode' || name === 'OpMode'; }
+function rootOf(name) {
+  let c = classes.get(name), guard = 0;
+  while (c && c.meta.base && classes.has(c.meta.base) && guard++ < 20) c = classes.get(c.meta.base);
+  return c ? c.meta.base : null;
+}
+async function instantiate(name, args) {
+  const c = classes.get(name);
+  if (!c) throw new Error('Unknown class ' + name);
+  const chain = []; let k = c, guard = 0;
+  while (k && guard++ < 20) { chain.unshift(k); k = k.meta.base ? classes.get(k.meta.base) : null; }
+  const root = chain[0].meta.base;
+  const self = Object.create(isOpModeRoot(root) ? run.base : null);
+  let ctor = null;
+  for (const kk of chain) { const ct = await kk.init(self); if (kk === c) ctor = ct; }
+  if (ctor) await ctor.apply(self, args);
+  run.instantiated.add(name);
+  return self;
+}
+
+let compileErrors = [];
+async function compileWorkspace(files) {
+  classes.clear(); compileErrors = [];
+  for (const k of Object.keys(G)) if (G[k] && G[k].__user) delete G[k];
+  const userClasses = prescanClassNames(files);
+  for (const [file, src] of Object.entries(files)) {
+    try {
+      const { js } = compileFile(file, src, userClasses);
+      let fn;
+      try { fn = new Function('__G', '__defineClass', 'with (__G) {\n' + js + '\n}'); }
+      catch (e) { throw new CompileError(file, null, 'Syntax problem: ' + e.message + '. Check for a missing ; ) or } in this file.'); }
+      fn(G, __defineClass);
+    } catch (e) {
+      compileErrors.push({ file, line: e.line, message: e.message });
+      for (const [n, c] of [...classes]) if (c.file === file) classes.delete(n);
+    }
+  }
+  for (const [name, c] of classes) {
+    const statics = Object.create(null);
+    statics.__user = true;
+    statics.__new = (...args) => instantiate(name, args);
+    c.statics = statics; G[name] = statics;
+  }
+  for (const [name, c] of [...classes]) {
+    try { c.init = await c.factory(c.statics); }
+    catch (e) { compileErrors.push({ file: c.file, message: `Error in a static field of ${name}: ${e.message}` }); classes.delete(name); }
+  }
+  return compileErrors;
+}
+function opModeList() {
+  const list = [];
+  for (const [name, c] of classes) {
+    const root = rootOf(name);
+    if (!isOpModeRoot(root) || !c.meta.ann.type || c.meta.ann.disabled) continue;
+    list.push({ cls: name, label: c.meta.ann.name || name, type: c.meta.ann.type, group: c.meta.ann.group || '', iterative: root === 'OpMode', file: c.file });
+  }
+  list.sort((a, b) => (a.type === b.type ? 0 : a.type === 'TeleOp' ? -1 : 1) || a.label.localeCompare(b.label));
+  return list;
+}
+
+// ---------- Physics ----------
+function stepMotors(dt) {
+  for (const m of sim.motors) {
+    const maxTps = m.rpm / 60 * m.tpr * m.var;
+    let cmd = 0;
+    if (m.mode === 'RUN_TO_POSITION') {
+      const err = m.target - m.shaftPos * m.dir;
+      cmd = Math.abs(err) <= 1 ? 0 : Math.sign(err) * Math.abs(m.power) * Math.min(1, Math.abs(err) / (m.tpr * 0.12));
+    } else if (m.mode !== 'STOP_AND_RESET_ENCODER') cmd = m.power;
+    // RUN_USING_ENCODER / RUN_TO_POSITION regulate velocity, so weak/strong motors match (until they hit their own max).
+    const nominal = m.rpm / 60 * m.tpr;
+    const regulated = m.mode === 'RUN_USING_ENCODER' || m.mode === 'RUN_TO_POSITION';
+    const target = m.dir * (regulated ? clip(cmd * nominal * 0.9, -maxTps, maxTps) : cmd * maxTps);
+    const tau = cmd === 0 ? (m.zpb === 'FLOAT' ? 0.55 : 0.05) : 0.08;
+    m.shaftVel += (target - m.shaftVel) * (1 - Math.exp(-dt / tau));
+    m.shaftPos += m.shaftVel * dt;
+    if (m.name === 'arm' || m.slot === 'ARM') {
+      const deg = (m.shaftPos * m.dir) / (m.tpr * 4) * 360;
+      if (deg < -5 || deg > 200) { const lim = deg < -5 ? -5 : 200; m.shaftPos = lim / 360 * m.tpr * 4 * m.dir; m.shaftVel = 0; }
+      sim.armAngle = clip(deg, -5, 200); if (m.used) sim.armUsed = true;
+    }
+  }
+}
+function wheelSpeed(slot) {
+  const d = settings.wheel * 1;
+  let sum = 0, n = 0;
+  for (const m of sim.motors) {
+    if (!m.slot) continue;
+    const s = m.slot;
+    const match = s === slot || (s === 'L' && (slot === 'FL' || slot === 'BL')) || (s === 'R' && (slot === 'FR' || slot === 'BR'));
+    if (!match) continue;
+    const isLeft = slot === 'FL' || slot === 'BL';
+    const mount = isLeft && settings.mirror ? -1 : 1;
+    sum += m.shaftVel / m.tpr * Math.PI * d * mount; n++;
+  }
+  return n ? sum / n : 0;
+}
+function stepRobot(dt) {
+  const FL = wheelSpeed('FL'), FR = wheelSpeed('FR'), BL = wheelSpeed('BL'), BR = wheelSpeed('BR');
+  sim.wheelSpeeds = { FL, FR, BL, BR };
+  let fwd, str, wcw;
+  if (settings.drive === 'mecanum') {
+    fwd = (FL + FR + BL + BR) / 4; str = (FL - FR - BL + BR) / 4; wcw = (FL - FR + BL - BR) / 4 / 13.5;
+  } else {
+    fwd = (FL + FR + BL + BR) / 4; str = 0; wcw = ((FL + BL) / 2 - (FR + BR) / 2) / 14.5;
+  }
+  const p = sim.pose, c = Math.cos(p.h), s = Math.sin(p.h);
+  p.x += (fwd * c + str * s) * dt; p.y += (fwd * s - str * c) * dt; p.h -= wcw * dt;
+  sim.speed = Math.hypot(fwd, str); sim.omega = -wcw;
+  const e = HALF * (Math.abs(Math.cos(p.h)) + Math.abs(Math.sin(p.h)));
+  const cx = clip(p.x, -FH + e, FH - e), cy = clip(p.y, -FH + e, FH - e);
+  sim.wall = cx !== p.x || cy !== p.y; p.x = cx; p.y = cy;
+}
+function physics(dt) {
+  const steps = Math.max(1, Math.ceil(dt / 0.004));
+  for (let i = 0; i < steps; i++) { stepMotors(dt / steps); stepRobot(dt / steps); }
+  const last = sim.trail[sim.trail.length - 1];
+  if (!last || Math.hypot(last.x - sim.pose.x, last.y - sim.pose.y) > 0.6) { sim.trail.push({ x: sim.pose.x, y: sim.pose.y }); if (sim.trail.length > 3000) sim.trail.shift(); }
+}
+// ================= Curriculum =================
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const J = (s) => `<pre><code>${esc(s.replace(/^\n/, ''))}</code></pre>`;
+const btnFile = (f, label) => `<button class="btn sm" data-open="${f}">${label || 'Open ' + f}</button>`;
+const btnSol = (f) => `<button class="btn sm" data-solution="${f}">Show solution: ${f}</button>`;
+
+const START = { x: 0, y: -48, hDeg: 90 };
+const inZone = (p, z) => Math.abs(p.x - z.x) <= z.w / 2 && Math.abs(p.y - z.y) <= z.h / 2;
+const ZONE_AHEAD = { x: 0, y: 12, w: 24, h: 24, label: 'Zone' };
+
+const LESSONS = [
+// ---------------- DAY 1 ----------------
+{ id: 'l1', day: 1, title: 'How your robot code runs', mins: 45, html: `
+<p>An FTC robot has two Android devices. The <b>Control Hub</b> sits on the robot, runs your Java and talks to motors and sensors. The <b>Driver Hub</b> sits with the drivers: it shows the OpMode list, the INIT / START / STOP buttons, telemetry, and reads the gamepads.</p>
+<h4>Your repo, in one minute</h4>
+<ul>
+<li><code>FtcRobotController/</code> is FIRST's SDK (version 12.0 this season). You rarely touch it.</li>
+<li><code>TeamCode/src/main/java/org/firstinspires/ftc/teamcode/</code> is <b>your</b> code: <code>MyFIRSTOpModeClass</code>, <code>TestAuto</code>, <code>DriveTrain</code>.</li>
+<li>Android Studio builds both into one app and installs it on the Control Hub over USB or Wi‑Fi (the green Run button).</li>
+</ul>
+<h4>The robot configuration</h4>
+<p>On the Driver Hub you create a configuration that names each port: "frontLeft" on motor port 0, and so on. <code>hardwareMap.get(DcMotor.class, "frontLeft")</code> looks that name up. The string must match exactly, capitals included, or the OpMode crashes at INIT. See the Robot setup tab for this sim's configuration.</p>
+<h4>An OpMode's life</h4>
+${J(`
+@TeleOp                                   // shows up in the TeleOp list
+public class MyFIRSTOpModeClass extends LinearOpMode {
+    @Override
+    public void runOpMode() {             // INIT pressed: starts here
+        frontLeft = hardwareMap.get(...); // 1. grab hardware
+        waitForStart();                   // 2. pauses until START
+        while (opModeIsActive()) {        // 3. repeats until STOP or time runs out
+            ... read gamepad, set motor power ...
+        }
+        ... runs once after STOP ...
+    }
+}`)}
+<p><code>@TeleOp</code> OpModes are for the 2‑minute driver period. <code>@Autonomous</code> OpModes run the 30‑second period with no drivers.</p>
+<div class="callout">Try it: pick <b>MyFIRSTOpModeClass</b> in the dropdown, press INIT, then START, click the field and hold <kbd>W</kbd>.</div>
+<div class="row">${btnFile('MyFIRSTOpModeClass.java')}</div>`,
+  challenge: { title: 'Find the bug by watching', text: 'Run MyFIRSTOpModeClass and push the left stick forward (W).', start: START, opmode: 'MyFIRSTOpModeClass',
+    check(c, phase) {
+      if (c.op.className !== 'MyFIRSTOpModeClass') return phase === 'end' ? { pass: false, msg: 'Run MyFIRSTOpModeClass for this one.' } : null;
+      if (c.headDev > 60) return { pass: true, msg: 'Spotted it: pushing forward makes the robot spin. Lesson 2 explains why.' };
+      return phase === 'end' ? { pass: false, msg: 'Hold W for a second while the OpMode is running and watch what the robot does.' } : null;
+    } } },
+
+{ id: 'l2', day: 1, title: 'Motor direction: why the robot spins', mins: 40, html: `
+<p>Motors on the left side of a chassis are mounted facing the opposite way from the right side. Give every motor <code>+0.5</code> and the right wheels roll forward while the left wheels roll backward, so the robot spins in place. Your TeleOp and TestAuto both do this.</p>
+<p>The fix is one line per motor on one side:</p>
+${J(`
+frontLeft.setDirection(DcMotor.Direction.REVERSE);
+backLeft.setDirection(DcMotor.Direction.REVERSE);`)}
+<p>Your <code>DriveTrain</code> class already has these lines. <code>MyFIRSTOpModeClass</code> and <code>TestAuto</code> don't, because they talk to the motors directly. That's a good argument for always going through <code>DriveTrain</code> (lesson 4).</p>
+<h4>The joystick is upside down</h4>
+<p>On FTC gamepads, pushing the stick <b>up</b> gives a <b>negative</b> <code>left_stick_y</code>. Your <code>gamepad1.left_stick_y * -1</code> is correct.</p>
+<h4>On a real robot</h4>
+<p>Put the robot on a box so the wheels spin freely, run a slow test, and check each wheel turns forward. If one side is backward, reverse that side. If a single wheel is backward, its motor is wired or configured on the wrong port.</p>
+<div class="row">${btnFile('MyFIRSTOpModeClass.java', 'Open your TeleOp to fix it')}</div>`,
+  challenge: { title: 'Drive straight', text: 'Fix the directions in MyFIRSTOpModeClass (or write your own TeleOp) and drive into the zone 2.5 tiles ahead without turning more than 25°.', start: START, zone: ZONE_AHEAD, opmode: 'MyFIRSTOpModeClass', solution: 'L2_DriveStraight.java',
+    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, ZONE_AHEAD) && c.headDev < 25) return { pass: true, msg: 'Straight into the zone. Motor directions fixed.' }; if (inZone(c.pose, ZONE_AHEAD)) return { pass: false, msg: 'You reached the zone but turned more than 25° on the way. Press Reset robot and drive straighter.' }; return null; } } },
+
+{ id: 'l3', day: 1, title: 'Telemetry and drive math', mins: 50, html: `
+<p><b>Telemetry</b> is how the robot talks back. It's your main debugging tool on the field.</p>
+${J(`
+telemetry.addData("Left power", left);   // queue a line
+telemetry.addData("Heading", "%.1f", h);  // printf-style formatting
+telemetry.update();                       // send the screen to the Driver Hub`)}
+<div class="callout">Your TeleOp calls <code>addData("Is Started", ...)</code> but never <code>telemetry.update()</code>, so nothing ever appears. Also, after <code>update()</code> the queue clears, so add your lines <b>inside</b> the loop every time.</div>
+<h4>Arcade drive math</h4>
+<p><code>left = drive + turn</code>, <code>right = drive - turn</code>. Full forward plus full right gives left = 2.0, right = 0.0. <code>setPower</code> clips at 1.0, so you get 1.0 / 0.0 and the turn is wrong. Divide both by the larger magnitude when it's over 1:</p>
+${J(`
+double max = Math.max(1.0, Math.max(Math.abs(left), Math.abs(right)));
+left /= max;
+right /= max;`)}
+<h4>Driver quality-of-life</h4>
+<ul><li><b>Slow mode</b>: multiply power by 0.4 while a bumper is held. Great for lining up.</li>
+<li><b>Deadzone</b>: ignore tiny stick values so a worn controller doesn't creep.</li>
+<li><b>Squared inputs</b>: <code>drive * Math.abs(drive)</code> gives finer control near the center.</li></ul>`,
+  challenge: { title: 'Show your numbers', text: 'While a TeleOp is running, show at least 3 telemetry lines (stick values, motor powers, an encoder count).', start: START, solution: 'L3_TelemetryDrive.java',
+    check(c) { if (c.op.annType === 'TeleOp' && c.op.state === 'running' && c.teleNow >= 3) return { pass: true, msg: 'Telemetry is on screen. Use it every time something looks wrong.' }; return null; } } },
+
+{ id: 'l4', day: 1, title: 'The Java you need: classes and subsystems', mins: 60, html: `
+<p>FTC Java uses a small part of the language. Learn these words by pointing at your own <code>DriveTrain.java</code>:</p>
+<ul>
+<li><b>class</b>: a blueprint. <code>public class DriveTrain { ... }</code></li>
+<li><b>field</b>: a variable the object keeps. <code>private DcMotor frontLeft;</code></li>
+<li><b>constructor</b>: runs once when you write <code>new DriveTrain(hardwareMap)</code>. Same name as the class, no return type.</li>
+<li><b>method</b>: something the object can do. <code>public void drive(double forward, double turn)</code></li>
+<li><b>extends</b>: <code>MyFIRSTOpModeClass extends LinearOpMode</code> inherits <code>hardwareMap</code>, <code>telemetry</code>, <code>gamepad1</code>, <code>waitForStart()</code>, <code>sleep()</code>.</li>
+<li>Types: <code>int</code> (whole number), <code>double</code> (decimal), <code>boolean</code> (true/false), <code>String</code> (text).</li>
+</ul>
+<h4>Why a subsystem class</h4>
+<p>Hardware names and motor directions now live in one file. Every TeleOp and Auto writes <code>new DriveTrain(hardwareMap)</code> and gets a correctly configured drivetrain. Strong teams do this for every mechanism: <code>Arm</code>, <code>Intake</code>, <code>Claw</code>.</p>
+${J(`
+DriveTrain driveTrain = new DriveTrain(hardwareMap);
+waitForStart();
+while (opModeIsActive()) {
+    driveTrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x);
+}`)}
+<h4>Review notes on DriveTrain.java</h4>
+<ul>
+<li><code>drive()</code> calls <code>setMode</code> on all four motors every loop. It works, but set the mode once in the constructor instead.</li>
+<li>It imports <code>LinearOpMode</code> and <code>TeleOp</code> but doesn't use them. Harmless; Android Studio greys them out.</li>
+<li><code>driveDistance()</code> has three real bugs. You'll fix them in lesson 6.</li>
+</ul>
+<div class="row">${btnFile('DriveTrain.java')}<button class="btn sm" data-newfile="1">New OpMode file</button></div>`,
+  challenge: { title: 'Use your DriveTrain', text: 'Write a TeleOp that creates new DriveTrain(hardwareMap) and drive into the zone.', start: START, zone: ZONE_AHEAD, solution: 'L4_SubsystemTeleOp.java',
+    check(c) { if (c.op.annType !== 'TeleOp') return null; const used = c.op.instantiated.has('DriveTrain'); if (inZone(c.pose, ZONE_AHEAD)) return used ? { pass: true, msg: 'Driving through your DriveTrain subsystem.' } : { pass: false, msg: 'You reached the zone, but this OpMode never created a DriveTrain. Use new DriveTrain(hardwareMap).' }; return null; } } },
+
+// ---------------- DAY 2 ----------------
+{ id: 'l5', day: 2, title: 'Timed autonomous (and why it drifts)', mins: 40, html: `
+<p>The simplest autonomous: set power, wait, stop. That's your <code>TestAuto</code>. It has two bugs:</p>
+<ol>
+<li>No motor directions, so it spins (lesson 2).</li>
+<li>${'<code>while (timer.milliseconds() &lt; 2000) { }</code>'} ignores STOP. If the referee or a driver hits STOP, the robot keeps driving for the rest of the 2 seconds. Add <code>opModeIsActive()</code> to every loop.</li>
+</ol>
+${J(`
+setMotorPower(0.5);
+timer.reset();
+while (opModeIsActive() && timer.seconds() < 1.6) {
+    telemetry.addData("Driving", "%.2f s", timer.seconds());
+    telemetry.update();
+}
+setMotorPower(0);`)}
+<p><code>sleep(1600);</code> does the same job in one line. Use it only in autonomous, never inside a TeleOp loop.</p>
+<h4>Why time-based autos are unreliable</h4>
+<p>Distance traveled depends on battery voltage, wheel wear, carpet and robot weight. Run your fixed auto three times with <b>Motor variation</b> on (Robot setup) and watch it land in a different spot each time. Encoders fix this next lesson.</p>
+<div class="row">${btnFile('TestAuto.java', 'Open TestAuto to fix it')}</div>`,
+  challenge: { title: 'Two tiles by the clock', text: 'With an Autonomous OpMode, finish with the robot center in the zone 2 tiles ahead.', start: START, zone: { x: 0, y: 0, w: 24, h: 24, label: '2 tiles' }, opmode: 'TestAuto', solution: 'L5_TimedAuto.java', endOnly: true,
+    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; return inZone(c.pose, this.zone) ? { pass: true, msg: 'Landed in the zone. Now try it 3 times in a row with motor variation on.' } : { pass: false, msg: `Ended at (${c.pose.x.toFixed(1)}, ${c.pose.y.toFixed(1)}). The zone is centered on (0, 0). Tune the time or power.` }; } } },
+
+{ id: 'l6', day: 2, title: 'Encoders: drive an exact distance', mins: 70, html: `
+<p>Each drive motor has an <b>encoder</b> that counts ticks as the shaft turns. A goBILDA 5203 312 RPM motor reports <b>537.7 ticks per output revolution</b>. Turn ticks into inches with the wheel's circumference:</p>
+${J(`
+static final double COUNTS_PER_MOTOR_REV = 537.7;
+static final double WHEEL_DIAMETER_INCHES = 96.0 / 25.4;   // 96 mm = 3.78 in
+static final double COUNTS_PER_INCH =
+        COUNTS_PER_MOTOR_REV / (WHEEL_DIAMETER_INCHES * Math.PI);   // ≈ 45.3`)}
+<p>Encoder modes also fix drift: in <code>RUN_USING_ENCODER</code> and <code>RUN_TO_POSITION</code>, <code>setPower(0.6)</code> means "60% of max <i>speed</i>" and the hub adjusts voltage to hold it, so a weak motor and a strong one match.</p>
+<p>Check your robot's actual motor and wheel. A different gearbox or wheel changes this number, and every autonomous depends on it.</p>
+<h4>RUN_TO_POSITION: the order matters</h4>
+${J(`
+m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // 0. zero the count
+m.setTargetPosition(target);                       // 1. target FIRST
+m.setMode(DcMotor.RunMode.RUN_TO_POSITION);        // 2. then the mode
+m.setPower(0.6);                                   // 3. then power, or it never moves
+while (opModeIsActive() && m.isBusy()) { }         // 4. wait for it to arrive
+m.setPower(0);`)}
+<div class="callout"><b>Your <code>driveDistance()</code></b> sets RUN_TO_POSITION before the target (the SDK throws <code>TargetPositionNotSetException</code>), never sets power, never waits, and passes inches straight in as ticks. Run it in the sim to see the first error yourself, then fix all four.</div>`,
+  challenge: { title: 'Stop on the line', text: 'Autonomous: drive exactly 48 in (2 tiles). End within 2 in of the target point and within 5° of straight.', start: START, zone: { x: 0, y: 0, w: 4, h: 4, label: '±2 in' }, solution: 'L6_EncoderAuto.java', endOnly: true,
+    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const dx = Math.abs(c.pose.x), dy = Math.abs(c.pose.y), dh = Math.abs(c.yawFromStart);
+      if (dx <= 2 && dy <= 2 && dh <= 5) return { pass: true, msg: `Ended ${Math.hypot(dx, dy).toFixed(2)} in from the target. That's what encoders buy you.` };
+      return { pass: false, msg: `Ended ${dy.toFixed(1)} in short/long, ${dx.toFixed(1)} in sideways, ${dh.toFixed(1)}° off. Check COUNTS_PER_INCH and the RUN_TO_POSITION order.` }; } } },
+
+{ id: 'l7', day: 2, title: 'Turning with the IMU', mins: 60, html: `
+<p>The Control Hub has a built‑in <b>IMU</b> (gyro). It reports the robot's heading (yaw) in degrees: counter‑clockwise is positive, and it stays between −180 and +180.</p>
+${J(`
+IMU imu = hardwareMap.get(IMU.class, "imu");
+imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+        RevHubOrientationOnRobot.LogoFacingDirection.UP,        // how the hub is mounted
+        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+imu.resetYaw();
+double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);`)}
+<p>The two orientation values must describe how your hub is really mounted, or turns will read wrong.</p>
+<h4>A P-controller</h4>
+<p>"Turn at 0.5 until heading ≥ 90" overshoots because the robot is still moving when you cut power. Instead make the power <b>proportional</b> to the error:</p>
+${J(`
+double error = AngleUnit.normalizeDegrees(target - heading);  // shortest way around
+double power = Range.clip(error * kP, -0.5, 0.5);           // big error = fast, small = slow`)}
+<ul><li>kP too high: it wobbles back and forth. Too low: it creeps or stalls.</li>
+<li>A small minimum power overcomes friction near the target.</li>
+<li>Stop when the error has stayed under ~1° for a moment, not the first time it crosses.</li></ul>
+<p>This idea, error times a gain, is the "P" in PID. It's the base of almost every precise mechanism in FTC.</p>`,
+  challenge: { title: 'Quarter turn', text: 'Autonomous: turn left to +90° (IMU yaw) within 2°, without drifting more than 6 in from the start.', start: START, solution: 'L7_ImuTurn.java', endOnly: true,
+    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const e = Math.abs(normDeg(c.yawFromStart - 90)), d = Math.hypot(c.pose.x - this.start.x, c.pose.y - this.start.y);
+      if (e <= 2 && d <= 6) return { pass: true, msg: `Ended ${e.toFixed(2)}° from 90°.` };
+      return { pass: false, msg: `Ended ${e.toFixed(1)}° from 90° and ${d.toFixed(1)} in from the start. Tune kP and the minimum power.` }; } } },
+
+{ id: 'l8', day: 2, title: 'Sequencing a full autonomous', mins: 60, html: `
+<p>Real autonomous routines are a list of steps built from two or three helper methods you trust. Once <code>driveInches()</code> and <code>turnToHeading()</code> work, an auto reads like a plan:</p>
+${J(`
+driveInches(48, 0.6);  turnToHeading(90);
+driveInches(48, 0.6);  turnToHeading(180);
+driveInches(48, 0.6);  turnToHeading(-90);
+driveInches(48, 0.6);  turnToHeading(0);`)}
+<ul>
+<li>Turn to an <b>absolute</b> heading (relative to the start) rather than "turn 90 more". Small errors don't add up.</li>
+<li>Put tunable numbers in <code>static final</code> constants at the top.</li>
+<li>Show the current step on telemetry so you can see where it got stuck.</li>
+<li>Next level: replace the blocking helpers with a <b>state machine</b> (an <code>enum</code> of steps plus a <code>switch</code> in the loop). That lets the arm and drivetrain move at the same time.</li>
+</ul>`,
+  challenge: { title: 'Drive a square', text: 'Autonomous: drive a 2‑tile square through all four corners and finish within 4 in of where you started.', start: START, marks: [{ x: 0, y: 0 }, { x: -48, y: 0 }, { x: -48, y: -48 }], marksAlt: [{ x: 0, y: 0 }, { x: 48, y: 0 }, { x: 48, y: -48 }], solution: 'L8_SquareAuto.java', endOnly: true,
+    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const allA = c.visited(this.marks), allB = c.visited(this.marksAlt), d = Math.hypot(c.pose.x - this.start.x, c.pose.y - this.start.y);
+      if ((allA || allB) && d <= 4) return { pass: true, msg: `Square done, ${d.toFixed(1)} in from the start.` };
+      if (!(allA || allB)) return { pass: false, msg: 'The path missed a corner. Each corner is 48 in from the last.' };
+      return { pass: false, msg: `Finished ${d.toFixed(1)} in from the start. Needs to be within 4 in.` }; } } },
+
+// ---------------- DAY 3 ----------------
+{ id: 'l9', day: 3, title: 'Mecanum and field-centric drive', mins: 60, html: `
+<p>Most competitive FTC robots use <b>mecanum</b> wheels: rollers at 45° let the robot strafe sideways. Ask your team which drivetrain the Biobuzz robot uses. Starting this lesson switches the sim to mecanum.</p>
+${J(`
+double y  = -gamepad1.left_stick_y;   // forward
+double x  =  gamepad1.left_stick_x;   // strafe right
+double rx =  gamepad1.right_stick_x;  // turn clockwise
+double d = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+frontLeft.setPower((y + x + rx) / d);
+backLeft.setPower((y - x + rx) / d);
+frontRight.setPower((y - x - rx) / d);
+backRight.setPower((y + x - rx) / d);`)}
+<p>Your current TeleOp sends the same power to front and back on each side, so on mecanum it can't strafe. Each wheel needs its own power.</p>
+<h4>Field-centric</h4>
+<p>Robot‑centric: "up" on the stick means the robot's front. Field‑centric: "up" always means away from the driver, whichever way the robot faces. Rotate the stick vector by the negative IMU heading:</p>
+${J(`
+double h = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+double rotX = x * Math.cos(-h) - y * Math.sin(-h);
+double rotY = x * Math.sin(-h) + y * Math.cos(-h);`)}
+<p>Give drivers a button that calls <code>imu.resetYaw()</code> in case the heading drifts.</p>`,
+  challenge: { title: 'Strafe', text: 'Mecanum TeleOp: slide into the zone 2 tiles to the right while keeping heading within 10° the whole way.', start: START, drive: 'mecanum', zone: { x: 48, y: -48, w: 24, h: 24, label: 'Strafe here' }, solution: 'L9_MecanumTeleOp.java',
+    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, this.zone)) return c.headDev <= 10 ? { pass: true, msg: 'Pure strafe. That is mecanum.' } : { pass: false, msg: 'Reached the zone but turned more than 10°. Strafe with the left stick sideways (A / D).' }; return null; } } },
+
+{ id: 'l10', day: 3, title: 'Mechanisms: arm, claw and button toggles', mins: 60, html: `
+<p>Game pieces get moved by mechanisms: arms, slides, intakes, claws. Two patterns cover most of them.</p>
+<h4>Motor to a position (arm, lift)</h4>
+${J(`
+arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // arm must start at its zero
+arm.setTargetPosition(0);
+arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+arm.setPower(0.7);
+// in the loop: just change the target. It never blocks driving.
+if (gamepad1.dpad_up) arm.setTargetPosition((int) (90 * ARM_TICKS_PER_DEGREE));`)}
+<p>Use <code>ZeroPowerBehavior.BRAKE</code> on arms so they hold position. In this sim the arm motor drives the arm through a 4:1 reduction.</p>
+<h4>Servo (claw, wrist)</h4>
+<p><code>claw.setPosition(0.0 … 1.0)</code> moves a servo to an angle. Find your open and closed numbers on the real robot and store them as constants.</p>
+<h4>Toggles need edge detection</h4>
+<p>The loop runs hundreds of times a second, so <code>if (gamepad1.a) closed = !closed;</code> flips many times per press. Act only when the button <b>becomes</b> pressed:</p>
+${J(`
+if (gamepad1.a && !lastA) clawClosed = !clawClosed;
+lastA = gamepad1.a;`)}`,
+  challenge: { title: 'Arm up, claw shut', text: 'Run a TeleOp that raises the arm to 90° (±5°) with the claw closed (position ≤ 0.2) at the same time. Keys: T = dpad up, K = A.', start: START, solution: 'L10_ArmClawTeleOp.java',
+    check(c) { if (c.op.state !== 'running') return null; if (Math.abs(c.armAngle - 90) <= 5 && c.clawPos != null && c.clawPos <= 0.2) return { pass: true, msg: 'Arm at 90° with the claw closed.' }; return null; } } },
+
+{ id: 'l11', day: 3, title: 'Iterative OpMode and non-blocking code', mins: 45, html: `
+<p>Besides <code>LinearOpMode</code> there's <code>OpMode</code>, where the SDK calls your methods for you:</p>
+${J(`
+public class MyTeleOp extends OpMode {
+    public void init()      { }   // INIT pressed, once
+    public void init_loop() { }   // repeats until START
+    public void start()     { }   // START pressed, once
+    public void loop()      { }   // repeats until STOP
+    public void stop()      { }   // STOP pressed
+}`)}
+<p>The rule: <code>loop()</code> must return quickly. No <code>sleep()</code> and no <code>while</code> waiting for a motor. The same rule applies inside a LinearOpMode's TeleOp loop: one <code>sleep(500)</code> freezes driving for half a second.</p>
+<h4>Timing without sleeping</h4>
+${J(`
+if (gamepad1.b && !kicking) { kicker.setPosition(1); kickTimer.reset(); kicking = true; }
+if (kicking && kickTimer.seconds() > 0.3) { kicker.setPosition(0); kicking = false; }`)}
+<p>Watch the <b>Loop</b> rate on the driver station bar. Real robots run roughly 50–300 loops per second. Slow loops make a robot feel laggy.</p>`,
+  challenge: { title: 'Loop, don\'t block', text: 'Drive into the zone with an OpMode that extends OpMode (iterative), not LinearOpMode.', start: START, zone: ZONE_AHEAD, solution: 'L11_IterativeTeleOp.java',
+    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, ZONE_AHEAD)) return c.op.kind === 'iterative' ? { pass: true, msg: 'Iterative OpMode driving.' } : { pass: false, msg: 'That was a LinearOpMode. Write one that extends OpMode.' }; return null; } } },
+
+{ id: 'l12', day: 3, title: 'Competition tools and your checklist', mins: 60, html: `
+<p>Three days gets you to the point where you understand every line of your team's code and can fix the common bugs. Tuning a real robot still takes hours with the hardware. Spend that time on these, roughly in this order:</p>
+<ul>
+<li><b>Odometry</b>: dead-wheel pods or a goBILDA Pinpoint track the robot's x, y and heading during auto, far better than drive-motor encoders.</li>
+<li><b>Path following</b>: Road Runner or Pedro Pathing turn odometry into smooth curved autonomous paths. Most top teams use one of them.</li>
+<li><b>Live tuning</b>: FTC Dashboard (or Panels) graphs values and lets you change constants like kP without redeploying.</li>
+<li><b>Vision</b>: the SDK's <code>VisionPortal</code> with AprilTags for localization and lining up on targets.</li>
+<li><b>Faster loops</b>: <code>LynxModule</code> bulk reads (<code>BulkCachingMode.AUTO</code>) cut sensor read time.</li>
+<li><b>Git</b>: pull before you start, commit small, never edit code at a competition without committing what was on the robot first.</li>
+</ul>
+<h4>Before every match</h4>
+<ol><li>Robot configuration on the Driver Hub matches the names in code.</li>
+<li>Code built and deployed from the commit you meant to run.</li>
+<li>Auto selected, robot placed in the same spot you tuned from.</li>
+<li>Battery above ~13 V. Gamepads assigned (Start+A, Start+B).</li></ol>
+<h4>Keep learning</h4>
+<ul><li>ftc-docs.firstinspires.org: official SDK docs and sample OpModes (also in <code>FtcRobotController/.../external/samples</code> in your repo).</li>
+<li>gm0.org (Game Manual 0): the community guide to building and programming.</li>
+<li>Beta8397's <b>virtual_robot</b> on GitHub runs real FTC Java in IntelliJ on your Mac with a 2D field, for when you want the real compiler.</li></ul>` }
+];
+// ================= "Explain my code": line-by-line explanations + code review =================
+// Each rule: [regex, title, explanation]. Several rules can match one line.
+const C_ = (s) => `<code>${esc(s)}</code>`;
+const EXPLAIN_RULES = [
+  [/^\s*package\s/, 'Package', `Says which folder this file lives in. Every TeamCode file starts with ${C_('package org.firstinspires.ftc.teamcode;')}. You never need to change it.`],
+  [/^\s*import\s+[\w.]+\.(\w+);/, 'Import', `Lets this file use a class from the FTC SDK by its short name. Android Studio adds these for you when you type a class name and press Alt+Enter (Option+Enter on Mac). A greyed-out import is unused and harmless.`],
+  [/@TeleOp/, '@TeleOp annotation', `Puts this OpMode in the <b>TeleOp</b> list on the Driver Hub (the 2‑minute driver-controlled period). Add ${C_('(name = "Drive", group = "Main")')} to choose the name drivers see.`],
+  [/@Autonomous/, '@Autonomous annotation', `Puts this OpMode in the <b>Autonomous</b> list (the 30‑second period with no drivers). The robot must do everything from code.`],
+  [/@Disabled/, '@Disabled', `Hides this OpMode from the Driver Hub list without deleting it.`],
+  [/@Override/, '@Override', `Marks a method that replaces one from the parent class (here, LinearOpMode or OpMode). If you misspell the method name, Java gives an error instead of silently never running it.`],
+  [/class\s+\w+\s+extends\s+LinearOpMode/, 'A LinearOpMode', `This class <b>is</b> an OpMode. ${C_('extends LinearOpMode')} means it inherits everything an OpMode has: ${C_('hardwareMap')}, ${C_('telemetry')}, ${C_('gamepad1')}, ${C_('gamepad2')}, ${C_('waitForStart()')}, ${C_('opModeIsActive()')}, ${C_('sleep()')}. "Linear" means your code runs top to bottom, once, inside ${C_('runOpMode()')}.`],
+  [/class\s+\w+\s+extends\s+OpMode/, 'An iterative OpMode', `The SDK calls your methods for you: ${C_('init()')} once at INIT, ${C_('loop()')} over and over after START, ${C_('stop()')} at STOP. ${C_('loop()')} must finish quickly every time: no sleep, no waiting loops.`],
+  [/^\s*public\s+class\s+(\w+)\s*\{/, 'A helper class', `This class is not an OpMode (it doesn't extend one), so it never appears on the Driver Hub. It's a <b>subsystem</b>: other OpModes create it with ${C_('new')} and call its methods. That keeps hardware setup in one place.`],
+  [/^\s*(private|public|protected)?\s*(static\s+)?(final\s+)?DcMotor(Ex)?\s+[\w\s,]+;/, 'Motor field', `Declares a variable that will hold a motor. Right now it's empty (${C_('null')}); it gets a real motor later from ${C_('hardwareMap.get(...)')}. Using it before then crashes with a NullPointerException.`],
+  [/^\s*(private|public|protected)?\s*Servo\s+\w+\s*;/, 'Servo field', `A variable that will hold a servo (a motor that moves to an angle, used for claws and wrists).`],
+  [/^\s*(private|public|protected)?\s*IMU\s+\w+\s*;/, 'IMU field', `A variable for the Control Hub's built-in gyro, which measures which way the robot is facing.`],
+  [/ElapsedTime\s+\w+\s*=\s*new\s+ElapsedTime\(\)/, 'A stopwatch', `${C_('ElapsedTime')} is a stopwatch that starts when it's created. ${C_('reset()')} sets it back to 0; ${C_('seconds()')} and ${C_('milliseconds()')} read it. Used to time things without blocking.`],
+  [/static\s+final\s+double\s+\w+\s*=/, 'A constant', `${C_('static final')} means this number never changes while the program runs. Put tuning numbers (ticks per inch, speeds, servo positions) here with CAPITAL names so you can find and change them in one spot.`],
+  [/public\s+void\s+runOpMode\s*\(/, 'runOpMode(): the start', `When a driver presses <b>INIT</b>, the SDK calls this method. Everything inside runs top to bottom. When it finishes (or STOP is pressed) the OpMode ends.`],
+  [/public\s+(\w+)\s*\(\s*HardwareMap\s+\w+\s*\)/, 'Constructor', `A <b>constructor</b>: it has the class's name and no return type. It runs once when an OpMode writes ${C_('new DriveTrain(hardwareMap)')}. The OpMode passes in its ${C_('hardwareMap')} so this class can look up the motors.`],
+  [/^\s*(public|private|protected)\s+(static\s+)?void\s+(\w+)\s*\(([^)]*)\)/, 'Method', `A <b>method</b>: a named block of code you can run by writing its name. ${C_('void')} means it doesn't hand back a value. The things in the parentheses are <b>parameters</b>: values the caller passes in.`],
+  [/^\s*(public|private|protected)\s+(static\s+)?(double|int|boolean)\s+(\w+)\s*\(/, 'Method that returns a value', `This method computes something and hands it back with ${C_('return')}. The word before the name (${C_('double')}, ${C_('int')}, ${C_('boolean')}) is the type of value it returns.`],
+  [/hardwareMap\.get\(\s*DcMotor(Ex)?\.class\s*,\s*"([^"]+)"\s*\)/, 'Look up a motor', `Asks the robot configuration on the Control Hub for the motor named in quotes. The name must match the configuration <b>exactly</b>, including capitals, or the OpMode crashes at INIT with "Unable to find a hardware device".`],
+  [/hardwareMap\.get\(\s*Servo\.class/, 'Look up a servo', `Gets the servo with this configured name.`],
+  [/hardwareMap\.get\(\s*IMU\.class/, 'Look up the IMU', `Gets the gyro. On a Control Hub it's usually configured with the name "imu".`],
+  [/hardwareMap\.get\(\s*(DistanceSensor|ColorSensor|TouchSensor|NormalizedColorSensor)\.class/, 'Look up a sensor', `Gets a sensor by its configured name.`],
+  [/setDirection\(\s*[\w.]*Direction\.REVERSE\s*\)/, 'Reverse a motor', `Flips which way "positive power" turns this motor. Motors on the left and right of a chassis face opposite directions, so one side must be reversed or the robot spins in place instead of driving straight.`],
+  [/setDirection\(\s*[\w.]*Direction\.FORWARD\s*\)/, 'Motor forward', `Keeps the default direction. Motors are FORWARD unless you change them, so this line only makes your intent clear.`],
+  [/waitForStart\(\)/, 'Wait for START', `Code above this line runs during INIT (good for setup). Here the program pauses until the driver presses <b>START</b>. In a real match, START comes when the field timer begins.`],
+  [/while\s*\(\s*opModeIsActive\(\)\s*\)/, 'The main loop', `Repeats everything inside the braces until STOP is pressed or the period's time runs out. It runs many times per second, so each pass reads the gamepad fresh and updates the motors.`],
+  [/opModeIsActive\(\)\s*&&/, 'Loop with an exit', `Keeps looping while BOTH are true: the OpMode is still running AND your other condition holds. The ${C_('opModeIsActive()')} part lets STOP end the loop immediately.`],
+  [/while\s*\(\s*(?!opModeIsActive)[^)]*\)/, 'A while loop', `Repeats the code in braces as long as the condition in parentheses is true, checking it before each pass.`],
+  [/gamepad[12]\.left_stick_y/, 'Left stick up/down', `A number from −1 to 1. Careful: pushing the stick <b>up</b> gives a <b>negative</b> number, so drive code multiplies by −1 to make "up" mean "forward".`],
+  [/gamepad[12]\.left_stick_x/, 'Left stick left/right', `A number from −1 (full left) to 1 (full right). 0 when centered.`],
+  [/gamepad[12]\.right_stick_[xy]/, 'Right stick', `Same as the left stick, on the right side. Mecanum drives usually use right_stick_x for turning.`],
+  [/gamepad[12]\.(a|b|x|y|left_bumper|right_bumper|dpad_\w+)\b/, 'Gamepad button', `${C_('true')} while the button is held, ${C_('false')} otherwise. For "press once to toggle", compare with last loop's value so it only fires when the button <b>becomes</b> pressed.`],
+  [/gamepad[12]\.(left|right)_trigger/, 'Trigger', `How far the trigger is pulled, from 0 to 1.`],
+  [/\*\s*-1\b|=\s*-gamepad/, 'Flip the sign', `Multiplying by −1 turns "stick up = negative" into "stick up = positive", so forward on the stick means forward on the robot.`],
+  [/^\s*double\s+\w+\s*=/, 'A decimal variable', `Creates a ${C_('double')} (a decimal number like 0.75 or −1.0) and stores a value in it. Motor powers and stick values are doubles.`],
+  [/^\s*int\s+\w+\s*=/, 'A whole-number variable', `Creates an ${C_('int')} (whole number like 0, 453, −20). Encoder ticks are ints.`],
+  [/^\s*boolean\s+\w+\s*=/, 'A true/false variable', `Creates a ${C_('boolean')}: it can only be ${C_('true')} or ${C_('false')}. Great for remembering modes and toggles.`],
+  [/\(int\)/, 'Cast to int', `${C_('(int)')} converts a decimal to a whole number by chopping off everything after the point: ${C_('(int) 10.9')} is 10. Use ${C_('Math.round')} first if you want rounding.`],
+  [/=\s*\w+\s*\+\s*\w+\s*;/, 'Add two values', `Arcade-drive mixing works like this: left = forward + turn, right = forward − turn. Turning right speeds up the left wheels and slows the right ones.`],
+  [/\.setPower\(\s*0\s*\)/, 'Stop this motor', `Power 0 means stop. What happens next depends on ZeroPowerBehavior: BRAKE stops quickly, FLOAT coasts.`],
+  [/\.setPower\(/, 'Set motor power', `Power goes from <b>−1.0</b> (full backward) through 0 (stopped) to <b>1.0</b> (full forward). Values outside that are clipped to ±1. The motor keeps that power until you set a new one. In RUN_TO_POSITION, power means "how fast to travel to the target".`],
+  [/RunMode\.RUN_WITHOUT_ENCODER/, 'Mode: raw power', `The motor just gets the power you set, no speed control. Speed changes with battery voltage and load. Fine for driver control.`],
+  [/RunMode\.RUN_USING_ENCODER/, 'Mode: speed control', `The motor uses its encoder to hold a steady <b>speed</b>: setPower(0.5) means half of max speed, even as the battery drains. Better for repeatable autonomous.`],
+  [/RunMode\.STOP_AND_RESET_ENCODER/, 'Reset the encoder', `Stops the motor and sets its tick count back to 0. Do this before measuring a new distance. The motor won't move again until you switch to another mode.`],
+  [/RunMode\.RUN_TO_POSITION/, 'Mode: go to a target', `The motor drives itself to the tick count from ${C_('setTargetPosition()')} and holds there. Order matters: <b>setTargetPosition, then this mode, then setPower</b>. Switching to this mode with no target set throws TargetPositionNotSetException.`],
+  [/setTargetPosition\(/, 'Set the target', `The encoder count (in ticks, not inches) the motor should drive to in RUN_TO_POSITION. A goBILDA 312 RPM motor counts 537.7 ticks per turn; with a 96 mm wheel that's about 45.3 ticks per inch.`],
+  [/\.isBusy\(\)/, 'Still moving?', `${C_('true')} while a RUN_TO_POSITION motor hasn't reached its target yet. Loop on it to wait until the robot arrives.`],
+  [/getCurrentPosition\(\)/, 'Read the encoder', `How many ticks the motor has turned since the last reset. Divide by ticks per inch to get distance.`],
+  [/setZeroPowerBehavior\(.*BRAKE/, 'Brake when stopped', `At power 0 the motor actively resists turning, so the robot (or arm) stops fast and holds. Use it for drivetrains and arms.`],
+  [/setZeroPowerBehavior\(.*FLOAT/, 'Coast when stopped', `At power 0 the motor spins freely and the robot coasts.`],
+  [/telemetry\.addData\(/, 'Queue a telemetry line', `Adds "caption : value" to the next Driver Hub screen. Nothing shows until ${C_('telemetry.update()')}. With a format like ${C_('"%.2f"')} you get 2 decimal places.`],
+  [/telemetry\.addLine\(/, 'Queue a text line', `Adds plain text to the next Driver Hub screen.`],
+  [/telemetry\.update\(\)/, 'Send telemetry', `Sends all queued lines to the Driver Hub and clears the queue. Call it once per loop, after your addData lines.`],
+  [/\.reset\(\)/, 'Restart the stopwatch', `Sets this ElapsedTime back to 0 so you can time from now.`],
+  [/\.(milliseconds|seconds)\(\)/, 'Read the stopwatch', `How long since the last reset. 1000 milliseconds = 1 second.`],
+  [/\bsleep\(\s*\d+/, 'Pause', `Pauses this OpMode for that many milliseconds while motors keep doing whatever you last told them. OK in autonomous; never inside a TeleOp loop, because driving freezes.`],
+  [/Math\.abs\(/, 'Absolute value', `Removes the minus sign: Math.abs(−0.7) is 0.7. Used to compare sizes of powers or errors.`],
+  [/Math\.max\(/, 'Largest value', `Returns the bigger of two numbers.`],
+  [/Range\.clip\(/, 'Clamp a value', `Keeps a number between a minimum and maximum, e.g. limits power to ±0.5.`],
+  [/\.setPosition\(/, 'Move a servo', `Moves the servo to a position from 0.0 to 1.0 (each end is one end of its travel). Find your claw's open and closed numbers on the real robot.`],
+  [/getYaw\(/, 'Robot heading', `The IMU's heading in degrees: counter-clockwise is positive, range −180 to 180.`],
+  [/new\s+\w+\(\s*hardwareMap\s*\)/, 'Create a subsystem', `${C_('new')} builds an object from a class and runs its constructor. Here the OpMode hands its hardwareMap to your class so it can find the motors.`],
+  [/^\s*return\b/, 'Return', `Hands a value back to whoever called this method, and leaves the method.`],
+  [/^\s*if\s*\(/, 'Decision', `Runs the next block only when the condition in parentheses is true.`],
+  [/^\s*\}\s*else/, 'Otherwise', `Runs when the previous ${C_('if')} condition was false.`],
+  [/^\s*for\s*\(\s*\w+\s+\w+\s*:/, 'For each', `Runs the block once for every item in the list, e.g. every motor in an array.`],
+  [/^\s*(?!waitForStart|sleep|idle|requestOpModeStop)\w+\s*\(\s*[^)]*\)\s*;\s*$/, 'Call your own method', `Runs a method defined in this class. Splitting code into named methods makes it read like a plan.`],
+  [/^\s*\/\//, 'Comment', `Java ignores anything after ${C_('//')}. Comments are notes for people.`],
+  [/^\s*\}\s*$/, 'Closing brace', `Ends the block that started at the matching ${C_('{')} above. Every ${C_('{')} needs exactly one ${C_('}')}.`],
+];
+
+// Hand-written notes for your team's files (shown first, by matching the line's text).
+const REPO_NOTES = {
+  'DriveTrain.java': [
+    ['public DriveTrain(HardwareMap hardwareMap)', 'Your constructor runs once when an OpMode does <code>new DriveTrain(hardwareMap)</code>. It finds the 4 motors and sets their directions, so every OpMode that uses DriveTrain gets a correctly set-up drivetrain.'],
+    ['frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);', 'You reverse the left side here. This is the line your other two OpModes are missing, which is why they spin.'],
+    ['public void drive(double forward, double turn){', 'Your drive method takes two numbers: how much to go forward (−1 to 1) and how much to turn (−1 to 1). It turns them into a power for each side.'],
+    ['double left = forward + turn;', 'Arcade mixing. Example: forward 0, turn 1 gives left = 1 and right = −1, so the robot spins right. Forward 1, turn 0 gives both 1: straight ahead. Forward 1 + turn 1 gives left = 2, which setPower clips to 1.'],
+    ['frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);', 'Inside drive(), this runs every loop, hundreds of times per second. It works, but it only needs to happen once: move these four lines into the constructor.'],
+    ['public void stop(){', 'stop() reuses drive(): forward 0 and turn 0 make every power 0. Reusing your own method is good practice.'],
+    ['public void driveDistance(double distance){', 'Goal: drive an exact distance by counting wheel rotations with the encoders. It isn\'t finished yet; the next lines explain the four things to fix.'],
+    ['int counts = (int) distance;', 'Fix #1: this treats inches as ticks. 10 ticks is about 0.2 inch. Use <code>(int) (distance * COUNTS_PER_INCH)</code> with COUNTS_PER_INCH = 537.7 / (3.78 * Math.PI) ≈ 45.3 for a 96 mm wheel.'],
+    ['frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);', 'Resets each encoder to 0 so the next target is measured from here. This part is correct.'],
+    ['frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);', 'Fix #2: this comes BEFORE setTargetPosition, so the SDK throws TargetPositionNotSetException. Move the four setTargetPosition lines above these four.'],
+    ['frontLeft.setTargetPosition(counts);', 'Fix #3: after setting the targets and mode, call setPower(0.5) (or any speed) on all four. Power 0, the default, means the motors never move. Fix #4: something has to wait until <code>isBusy()</code> is false before the auto moves on. Do that in the OpMode with <code>while (opModeIsActive() && ...isBusy())</code>.'],
+  ],
+  'TestAuto.java': [
+    ['private ElapsedTime timer = new ElapsedTime();', 'Your stopwatch. It\'s created when the OpMode is, and you reset it right before driving.'],
+    ['setMotorPower(.5);', 'Starts all four motors at half power. They keep running at 0.5 until something sets a new power. This is also why the robot spins: no motors are reversed in this file.'],
+    ['timer.reset();', 'Starts timing from 0, right as the motors start.'],
+    ['while (timer.milliseconds() < 2000){', 'Waits 2 seconds (2000 ms) while the motors keep going; the empty loop itself does nothing. Fix: write <code>while (opModeIsActive() && timer.milliseconds() < 2000)</code> so STOP works, or use <code>sleep(2000);</code>.'],
+    ['setMotorPower(0);', 'After 2 seconds, stop. Your auto as a sentence: "drive at half power for 2 seconds, then stop."'],
+    ['private void setMotorPower(double motorPower){', 'A shortcut you wrote so you don\'t repeat four setPower lines. motorPower is whatever number the caller passes, like .5 or 0.'],
+  ],
+  'MyFIRSTOpModeClass.java': [
+    ['waitForStart();', 'Everything above here is setup during INIT. Below it runs after START.'],
+    ['telemetry.addData("Is Started", isStarted());', 'This queues a line, but nothing calls <code>telemetry.update()</code>, so it never shows. It\'s also outside the loop, so even with update() it would only show once.'],
+    ['double drive = gamepad1.left_stick_y * -1;', 'Stick up gives −1, so × −1 makes up = +1 = forward. Correct.'],
+    ['double left = drive + turn;', 'Same arcade math as DriveTrain.drive(). You could replace this whole loop body with <code>driveTrain.drive(drive, turn)</code>.'],
+    ['frontLeft.setPower(left);', 'Sends power to the motors. But no motors were reversed in this file, so the left wheels roll backward when you push forward: the robot spins.'],
+    ['frontLeft.setPower(0);', 'After the loop ends (STOP), stop all motors. The SDK also does this for you, but it\'s a good habit.'],
+  ]
+};
+
+// Whole-file checks: things that are wrong or risky.
+function reviewFile(name, src) {
+  const lines = src.split('\n'), issues = [];
+  const find = (re) => lines.findIndex(l => re.test(l));
+  const findAll = (re) => lines.map((l, i) => re.test(l) ? i : -1).filter(i => i >= 0);
+  const isOpMode = /extends\s+(Linear)?OpMode/.test(src), isLinear = /extends\s+LinearOpMode/.test(src);
+  // RUN_TO_POSITION before setTargetPosition
+  const rtp = find(/setMode\(.*RUN_TO_POSITION/), stp = find(/setTargetPosition\(/);
+  if (rtp >= 0 && (stp < 0 || stp > rtp)) issues.push({ line: rtp, kind: 'bug', text: 'RUN_TO_POSITION is set before any setTargetPosition(). The SDK throws TargetPositionNotSetException here. Set the target first.' });
+  if (rtp >= 0) {
+    const after = lines.slice(rtp).join('\n');
+    if (!/setPower\(\s*(?!0\s*\))/.test(after)) issues.push({ line: rtp, kind: 'bug', text: 'No setPower() with a non-zero value after switching to RUN_TO_POSITION, so the motors never move.' });
+    if (!/isBusy\(\)/.test(src)) issues.push({ line: rtp, kind: 'warn', text: 'Nothing checks isBusy(), so the code doesn\'t wait for the motors to reach their target.' });
+  }
+  // loops that ignore STOP
+  if (isLinear) for (const i of findAll(/^\s*while\s*\(/)) if (!/opModeIsActive|isStopRequested|opModeInInit/.test(lines[i])) issues.push({ line: i, kind: 'bug', text: 'This loop doesn\'t check opModeIsActive(), so pressing STOP won\'t end it. Add opModeIsActive() && to the condition.' });
+  // telemetry without update
+  if (/telemetry\.add(Data|Line)/.test(src) && !/telemetry\.update\(\)/.test(src) && !/extends\s+OpMode/.test(src)) issues.push({ line: find(/telemetry\.add/), kind: 'bug', text: 'telemetry.addData() is never followed by telemetry.update(), so nothing appears on the Driver Hub.' });
+  // OpMode drives motors directly with no reversal
+  if (isOpMode && (src.match(/\.setPower\(/g) || []).length >= 4 && /hardwareMap\.get\(\s*DcMotor/.test(src) && !/REVERSE/.test(src)) issues.push({ line: find(/hardwareMap\.get\(\s*DcMotor/), kind: 'bug', text: 'Four drive motors are used but none is reversed. On a real chassis the robot will spin instead of driving straight. Reverse one side.' });
+  // setMode in a method that runs every loop
+  const dm = find(/void\s+drive\s*\(/);
+  if (dm >= 0) { const end = lines.findIndex((l, i) => i > dm && /^\s{4}\}/.test(l)); const body = lines.slice(dm, end < 0 ? undefined : end).join('\n'); if (/setMode\(/.test(body)) issues.push({ line: dm, kind: 'tip', text: 'drive() calls setMode() every time it runs (every loop). Move the setMode calls to the constructor.' }); }
+  // inches passed straight to ticks
+  const ic = find(/int\s+\w+\s*=\s*\(int\)\s*\w+\s*;/);
+  if (ic >= 0 && rtp >= 0) issues.push({ line: ic, kind: 'bug', text: 'A distance is cast straight to encoder ticks. Multiply by COUNTS_PER_INCH first (≈45.3 for a 312 RPM motor with a 96 mm wheel).' });
+  // sleep in TeleOp loop
+  if (/@TeleOp/.test(src)) { const w = find(/while\s*\(\s*opModeIsActive/); if (w >= 0 && lines.slice(w).some(l => /\bsleep\(/.test(l))) issues.push({ line: w + lines.slice(w).findIndex(l => /\bsleep\(/.test(l)), kind: 'warn', text: 'sleep() inside the TeleOp loop freezes driving while it waits. Use an ElapsedTime check instead.' }); }
+  // unused imports
+  for (const i of findAll(/^\s*import\s+[\w.]+\.(\w+);/)) { const cls = /\.(\w+);/.exec(lines[i])[1]; const rest = lines.filter((_, j) => j !== i).join('\n'); if (!new RegExp('\\b' + cls + '\\b').test(rest)) issues.push({ line: i, kind: 'tip', text: `Unused import ${cls}. Harmless; Android Studio greys it out.` }); }
+  return issues.sort((a, b) => a.line - b.line);
+}
+
+function explainLine(file, line) {
+  const t = line.trim(), out = [];
+  const notes = REPO_NOTES[file] && files[file] === REPO_FILES[file] ? REPO_NOTES[file] : (REPO_NOTES[file] || []);
+  for (const [match, note] of notes) if (t === match.trim()) out.push({ title: 'About your line', html: note, mine: true });
+  const seen = new Set();
+  for (const [re, title, html] of EXPLAIN_RULES) {
+    if (out.length >= 4) break;
+    if (re.test(line) && !seen.has(title)) { seen.add(title); out.push({ title, html }); }
+  }
+  return out;
+}
+
+let explainFile = null, explainOpen = -1;
+function renderExplain() {
+  const host = $('explainCode'); if (!host) return;
+  const names = Object.keys(files);
+  if (!explainFile || !files[explainFile]) explainFile = files[activeFile] ? activeFile : names[0];
+  const sel = $('explainSel'); sel.textContent = '';
+  for (const n of names) { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); }
+  sel.value = explainFile;
+  const src = files[explainFile], lines = src.split('\n'), issues = reviewFile(explainFile, src);
+  const byLine = new Map(); for (const is of issues) { if (!byLine.has(is.line)) byLine.set(is.line, []); byLine.get(is.line).push(is); }
+  const rv = $('explainReview'); rv.textContent = '';
+  const h = document.createElement('div'); h.className = 'rvhead';
+  const bugs = issues.filter(i => i.kind === 'bug').length;
+  h.textContent = issues.length ? `Review: ${bugs} bug${bugs === 1 ? '' : 's'}, ${issues.length - bugs} other note${issues.length - bugs === 1 ? '' : 's'}` : 'Review: no common problems found';
+  rv.appendChild(h);
+  for (const is of issues) {
+    const b = document.createElement('button'); b.className = 'rvitem ' + is.kind;
+    b.innerHTML = `<span class="rvk">${is.kind === 'bug' ? 'Bug' : is.kind === 'warn' ? 'Check' : 'Tip'}</span><span>Line ${is.line + 1}: ${esc(is.text)}</span>`;
+    b.addEventListener('click', () => { explainOpen = is.line; renderExplain(); const el = host.querySelector(`[data-ln="${is.line}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+    rv.appendChild(b);
+  }
+  host.textContent = '';
+  lines.forEach((ln, i) => {
+    const row = document.createElement('button'); row.className = 'xline'; row.dataset.ln = i;
+    const ex = ln.trim() ? explainLine(explainFile, ln) : [];
+    const iss = byLine.get(i);
+    if (iss) row.classList.add(iss.some(x => x.kind === 'bug') ? 'hasbug' : 'hastip');
+    else if (ex.some(e => e.mine)) row.classList.add('hasmine');
+    if (!ex.length && !iss) row.classList.add('plain');
+    row.innerHTML = `<span class="xn">${i + 1}</span><span class="xc">${esc(ln) || ' '}</span>`;
+    row.setAttribute('aria-expanded', String(i === explainOpen));
+    row.addEventListener('click', () => { explainOpen = explainOpen === i ? -1 : i; renderExplain(); });
+    host.appendChild(row);
+    if (i === explainOpen) {
+      const box = document.createElement('div'); box.className = 'xbox';
+      let html = '';
+      for (const is of iss || []) html += `<div class="xitem ${is.kind}"><b>${is.kind === 'bug' ? 'Bug' : is.kind === 'warn' ? 'Check this' : 'Tip'}</b> ${esc(is.text)}</div>`;
+      for (const e of ex) html += `<div class="xitem ${e.mine ? 'mine' : ''}"><b>${esc(e.title)}</b> ${e.html}</div>`;
+      if (!html) html = '<div class="xitem">Nothing special here: this line is part of the structure around it.</div>';
+      box.innerHTML = html; host.appendChild(box);
+    }
+  });
+}
+$('explainSel').addEventListener('change', (e) => { explainFile = e.target.value; explainOpen = -1; renderExplain(); });
+$('btnExplainEdit').addEventListener('click', () => { if (files[explainFile]) openFile(explainFile); });
+
+$('btnExplainThis').addEventListener('click', () => { explainFile = activeFile; explainOpen = -1; showPane('explain'); });
+// ================= Workspace, UI, runner, rendering =================
+let files = store.get('bbsim.files', null);
+if (!files || typeof files !== 'object' || !Object.keys(files).length) files = Object.assign({}, REPO_FILES);
+let activeFile = store.get('bbsim.active', 'MyFIRSTOpModeClass.java');
+if (!files[activeFile]) activeFile = Object.keys(files)[0];
+let progress = store.get('bbsim.progress', {});
+let activeChallenge = null, challengeResult = null;
+const saveFiles = () => { store.set('bbsim.files', files); store.set('bbsim.active', activeFile); };
+
+// ---------- log & telemetry ----------
+const logEl = $('log');
+function log(kind, msg) {
+  const div = document.createElement('div');
+  div.className = kind;
+  const t = run.state !== 'idle' ? ((nowMs() - run.initAt) / 1000).toFixed(1).padStart(5) + 's ' : '';
+  div.textContent = t + msg;
+  logEl.appendChild(div);
+  while (logEl.childNodes.length > 200) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function renderTelemetry() {
+  const el = $('telemetry');
+  const lines = run.telemetryShown;
+  el.textContent = '';
+  if (!lines.length) { const s = document.createElement('span'); s.className = 'dim'; s.textContent = run.state === 'idle' ? 'Telemetry appears here after your code calls telemetry.update().' : (run.telemetryUpdates ? '(empty update)' : 'No telemetry.update() yet.'); el.appendChild(s); }
+  else el.textContent = lines.map(l => l.line != null ? l.line : `${l.caption} : ${l.value}`).join('\n');
+  $('teleCount').textContent = run.telemetryUpdates ? `${run.telemetryUpdates} updates` : '';
+}
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showPane(t.dataset.pane)));
+document.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) showPane(g.dataset.goto); });
+function showPane(name) {
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.pane === name)));
+  ['learn', 'explain', 'code', 'robot'].forEach(p => { $('pane-' + p).hidden = p !== name; });
+  if (name === 'explain') renderExplain();
+  store.set('bbsim.pane', name);
+}
+
+// ---------- editor ----------
+const editor = $('editor');
+function renderFiles() {
+  const bar = $('files'); bar.textContent = '';
+  for (const f of Object.keys(files)) {
+    const b = document.createElement('button');
+    b.className = 'file'; b.textContent = f.replace(/\.java$/, '');
+    if (REPO_FILES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === REPO_FILES[f] ? 'repo' : 'repo · edited'; b.appendChild(tg); }
+    else if (SOLUTIONS[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = 'solution'; b.appendChild(tg); }
+    b.setAttribute('aria-current', String(f === activeFile));
+    b.addEventListener('click', () => openFile(f));
+    bar.appendChild(b);
+  }
+  $('btnRevert').disabled = !(REPO_FILES[activeFile] || SOLUTIONS[activeFile]) || files[activeFile] === (REPO_FILES[activeFile] || SOLUTIONS[activeFile]);
+  $('btnDelete').disabled = !!REPO_FILES[activeFile];
+  $('btnDelete').textContent = 'Delete file';
+}
+function openFile(f) {
+  activeFile = f; editor.value = files[f]; renderFiles(); saveFiles(); showPane('code');
+  showCompileStatusFor(f);
+}
+editor.addEventListener('input', () => { files[activeFile] = editor.value; saveFiles(); renderFilesSoon(); });
+let rfTimer = 0; function renderFilesSoon() { clearTimeout(rfTimer); rfTimer = setTimeout(renderFiles, 400); }
+editor.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab' && !e.shiftKey) {
+    e.preventDefault();
+    const s = editor.selectionStart, en = editor.selectionEnd;
+    editor.setRangeText('    ', s, en, 'end');
+    editor.dispatchEvent(new Event('input'));
+  } else if (e.key === 'Enter') {
+    const s = editor.selectionStart, before = editor.value.slice(0, s);
+    const lineStart = before.lastIndexOf('\n') + 1, indent = /^[ \t]*/.exec(before.slice(lineStart))[0];
+    const extra = /\{\s*$/.test(before) ? '    ' : '';
+    e.preventDefault(); editor.setRangeText('\n' + indent + extra, s, editor.selectionEnd, 'end'); editor.dispatchEvent(new Event('input'));
+  }
+});
+$('btnRevert').addEventListener('click', () => {
+  const orig = REPO_FILES[activeFile] || SOLUTIONS[activeFile]; if (!orig) return;
+  files[activeFile] = orig; editor.value = orig; saveFiles(); renderFiles(); log('info', `Reverted ${activeFile}`);
+});
+let delArm = 0;
+$('btnDelete').addEventListener('click', () => {
+  if (REPO_FILES[activeFile]) return;
+  if (Date.now() - delArm > 3000) { delArm = Date.now(); $('btnDelete').textContent = 'Click again to delete'; return; }
+  delete files[activeFile]; activeFile = Object.keys(files)[0]; editor.value = files[activeFile]; saveFiles(); renderFiles(); recompileQuiet();
+});
+$('btnNewFile').addEventListener('click', newFile);
+function newFile() {
+  let i = 1; while (files[`MyOpMode${i}.java`]) i++;
+  const name = `MyOpMode${i}`;
+  files[name + '.java'] = NEW_FILE_TEMPLATE(name); openFile(name + '.java'); recompileQuiet();
+}
+function addSolution(f) {
+  if (!files[f]) files[f] = SOLUTIONS[f];
+  openFile(f); recompileQuiet().then(() => { const op = opModeList().find(o => o.file === f); if (op) $('opSelect').value = op.cls; });
+}
+function showCompileStatusFor(f) {
+  const el = $('compileStatus');
+  const errs = compileErrors.filter(e => e.file === f);
+  if (errs.length) { el.className = 'compilebad'; el.textContent = errs.map(e => (e.line ? `Line ${e.line}: ` : '') + e.message).join(' · '); }
+  else if (lastCompileAt) { el.className = 'compileok'; el.textContent = 'Compiled with no errors.'; }
+  else { el.className = 'muted'; el.textContent = 'Edits compile when you press INIT.'; }
+}
+let lastCompileAt = 0;
+async function recompileQuiet() {
+  if (run.state !== 'idle') return;
+  await compileWorkspace(files); lastCompileAt = Date.now();
+  refreshOpModes(); showCompileStatusFor(activeFile);
+}
+
+// ---------- OpMode select ----------
+function refreshOpModes(keep) {
+  const sel = $('opSelect'), prev = keep || sel.value || store.get('bbsim.op', 'MyFIRSTOpModeClass');
+  const list = opModeList();
+  sel.textContent = '';
+  for (const type of ['TeleOp', 'Autonomous']) {
+    const og = document.createElement('optgroup'); og.label = type;
+    for (const o of list.filter(x => x.type === type)) { const op = document.createElement('option'); op.value = o.cls; op.textContent = o.label + (o.label !== o.cls ? `  (${o.cls})` : ''); og.appendChild(op); }
+    if (og.children.length) sel.appendChild(og);
+  }
+  if (!list.length) { const op = document.createElement('option'); op.textContent = 'No OpModes compiled'; op.value = ''; sel.appendChild(op); }
+  if (list.some(o => o.cls === prev)) sel.value = prev;
+}
+$('opSelect').addEventListener('change', () => store.set('bbsim.op', $('opSelect').value));
+
+// ---------- Runner ----------
+function setStateUI() {
+  const st = $('stateLabel');
+  const label = run.state === 'idle' ? 'Idle' : run.stopRequested ? 'Stopping' : run.state === 'init' ? 'Init' : 'Running';
+  st.textContent = label; st.className = 'state ' + (run.state === 'idle' ? 'idle' : run.state);
+  $('btnInit').disabled = run.state !== 'idle';
+  $('btnStart').disabled = run.state !== 'init' || run.stopRequested;
+  $('btnStop').disabled = run.state === 'idle';
+  $('opSelect').disabled = run.state !== 'idle';
+}
+async function doInit() {
+  if (run.state !== 'idle') return;
+  const errs = await compileWorkspace(files); lastCompileAt = Date.now();
+  const wanted = $('opSelect').value;
+  refreshOpModes(wanted); showCompileStatusFor(activeFile);
+  for (const e of errs) log('err', `${e.file}${e.line ? ' line ' + e.line : ''}: ${e.message}`);
+  const op = opModeList().find(o => o.cls === $('opSelect').value);
+  if (!op) { log('err', 'Nothing to run. Pick an OpMode (fix any compile errors above first).'); return; }
+  if (activeChallenge) { placeRobot(activeChallenge.start); }
+  run.token++; const token = run.token;
+  Object.assign(run, { state: 'init', stopRequested: false, stuckWarned: false, kind: op.iterative ? 'iterative' : 'linear', className: op.cls, annType: op.type, label: op.label,
+    instantiated: new Set(), initAt: nowMs(), startAt: 0, loops: 0, loopWindowStart: nowMs(), loopHz: 0, telemetryShown: [], telemetryUpdates: 0, matchEnd: 0, io: false, lastYield: nowMs(),
+    initPose: Object.assign({}, sim.pose), maxHeadDev: 0, maxTele: 0 });
+  run.telemetry = makeTelemetry(); buildHardware(); run.base = makeOpModeBase();
+  sim.trail = [{ x: sim.pose.x, y: sim.pose.y }];
+  challengeResult = null; updateBanner();
+  renderTelemetry(); setStateUI();
+  log('ok', `INIT  ${op.label}`);
+  (async () => {
+    try {
+      const self = await instantiate(op.cls, []);
+      if (op.iterative) await runIterative(self, token);
+      else {
+        if (typeof self.runOpMode !== 'function') throw new Error('This LinearOpMode has no runOpMode() method.');
+        await self.runOpMode();
+      }
+    } catch (e) {
+      if (!e.killed && token === run.token) reportRuntimeError(e);
+    } finally {
+      if (token === run.token) endOpMode();
+    }
+  })();
+}
+async function runIterative(self, token) {
+  const tele = run.telemetry;
+  const call = async (n) => { if (typeof self[n] === 'function') await self[n](); };
+  await call('init'); tele.update();
+  while (run.state === 'init' && !run.stopRequested) { checkAlive(token); await call('init_loop'); tele.update(); run.loops++; await wait(5); }
+  if (run.state !== 'running') { await call('stop'); return; }
+  await call('start');
+  while (!run.stopRequested) { checkAlive(token); await call('loop'); tele.update(); run.loops++; await wait(5); }
+  await call('stop'); tele.update();
+}
+function doStart() {
+  if (run.state !== 'init' || run.stopRequested) return;
+  run.state = 'running'; run.startAt = nowMs();
+  run.matchEnd = nowMs() + (run.annType === 'Autonomous' ? 30000 : 120000);
+  log('ok', 'START');
+  setStateUI();
+  $('field').focus({ preventScroll: true });
+}
+function requestStop(why) {
+  if (run.state === 'idle' || run.stopRequested) return;
+  run.stopRequested = true; run.stopAt = nowMs();
+  if (why === 'timer') log('info', 'Match period over: STOP');
+  else if (why === 'button') log('info', 'STOP pressed');
+  setStateUI();
+}
+function endOpMode() {
+  for (const m of sim.motors) m.power = 0;
+  for (const s of sim.servos) if (s.cont) s.power = 0;
+  const wasRunning = run.state === 'running';
+  run.state = 'idle'; run.stopRequested = false; run.matchEnd = 0;
+  log('info', wasRunning ? 'OpMode stopped' : 'OpMode ended');
+  setStateUI();
+  if (activeChallenge && !challengeResult?.pass) setTimeout(() => evaluateChallenge('end'), 450);
+}
+function reportRuntimeError(e) {
+  let msg = e && e.message ? e.message : String(e);
+  if (e && e.sdk) { log('err', msg); }
+  else if (e instanceof TypeError && /null|undefined/.test(msg)) {
+    const prop = (/reading '([^']+)'/.exec(msg) || [])[1];
+    log('err', `NullPointerException${prop ? ` when calling ${prop}()` : ''}: a variable is still null. Usually a hardware field used before hardwareMap.get(), or an object never created with new.`);
+  } else if (e instanceof ReferenceError) {
+    const name = (/^(\S+) is not defined/.exec(msg) || [])[1];
+    log('err', `Cannot find symbol${name ? ` "${name}"` : ''}. Check spelling and capitals, or that the field/method exists. (${msg})`);
+  } else if (e instanceof RangeError && /call stack/.test(msg)) {
+    log('err', 'StackOverflowError: a method keeps calling itself.');
+  } else log('err', 'Error in OpMode: ' + msg);
+  log('warn', 'On a real robot this stops the OpMode and shows the error on the Driver Hub.');
+}
+$('btnInit').addEventListener('click', doInit);
+$('btnStart').addEventListener('click', doStart);
+$('btnStop').addEventListener('click', () => requestStop('button'));
+$('btnClearLog').addEventListener('click', () => { logEl.textContent = ''; });
+$('btnReset').addEventListener('click', () => { placeRobot(activeChallenge ? activeChallenge.start : START); });
+function placeRobot(p) {
+  sim.pose = { x: p.x, y: p.y, h: (p.hDeg != null ? p.hDeg : 90) * Math.PI / 180 };
+  for (const m of sim.motors) { m.shaftVel = 0; }
+  sim.trail = [{ x: sim.pose.x, y: sim.pose.y }];
+  sim.imuZero = sim.pose.h;
+}
+
+// ---------- Challenges ----------
+function challengeCtx() {
+  return {
+    pose: sim.pose, initPose: run.initPose || sim.pose,
+    op: { className: run.className, annType: run.annType, kind: run.kind, instantiated: run.instantiated, state: run.state },
+    headDev: run.maxHeadDev || 0,
+    yawFromStart: normDeg((sim.pose.h - (run.initPose ? run.initPose.h : sim.pose.h)) * 180 / Math.PI),
+    teleNow: run.telemetryShown.length, armAngle: sim.armAngle, clawPos: clawServo() ? physicalServoPos(clawServo()) : null,
+    visited: (marks) => marks.every(mk => sim.trail.some(p => Math.hypot(p.x - mk.x, p.y - mk.y) <= 6))
+  };
+}
+function clawServo() { return sim.servos.find(s => s.name === 'claw' && !s.cont && s.used) || sim.servos.find(s => !s.cont && s.used); }
+function evaluateChallenge(phase) {
+  if (!activeChallenge || (challengeResult && challengeResult.pass)) return;
+  if (!run.className) return;
+  if (phase === 'live' && activeChallenge.endOnly) return;
+  const r = activeChallenge.check.call(activeChallenge, challengeCtx(), phase);
+  if (!r) return;
+  challengeResult = r;
+  if (r.pass) {
+    progress[activeChallenge.lessonId] = true; store.set('bbsim.progress', progress);
+    log('ok', 'Challenge passed: ' + r.msg); renderLessons(true);
+  } else if (phase === 'end') log('warn', 'Challenge: ' + r.msg);
+  updateBanner();
+}
+function startChallenge(lesson) {
+  const ch = lesson.challenge;
+  if (run.state !== 'idle') requestStop('button');
+  activeChallenge = Object.assign({ lessonId: lesson.id }, ch);
+  challengeResult = null;
+  if (ch.drive && settings.drive !== ch.drive) { settings.drive = ch.drive; saveSettings(); $('optDrive').value = ch.drive; log('info', 'Drivetrain switched to mecanum for this challenge.'); }
+  placeRobot(ch.start);
+  if (ch.opmode && opModeList().some(o => o.cls === ch.opmode)) $('opSelect').value = ch.opmode;
+  updateBanner(); renderLessons(true);
+  if (window.matchMedia('(max-width: 1040px)').matches) $('field').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function updateBanner() {
+  const b = $('banner');
+  if (!activeChallenge) { b.hidden = true; return; }
+  b.hidden = false;
+  b.classList.toggle('pass', !!(challengeResult && challengeResult.pass));
+  const t = $('bannerText'); t.textContent = '';
+  const bold = document.createElement('b');
+  bold.textContent = challengeResult && challengeResult.pass ? 'Passed  ' : activeChallenge.title + '  ';
+  t.appendChild(bold);
+  t.appendChild(document.createTextNode(challengeResult ? challengeResult.msg : activeChallenge.text));
+}
+$('btnEndChallenge').addEventListener('click', () => { activeChallenge = null; challengeResult = null; updateBanner(); renderLessons(true); });
+
+// ---------- Lessons UI ----------
+let openLesson = store.get('bbsim.openLesson', 'l1');
+function renderLessons(keepOpen) {
+  const host = $('lessons');
+  const openNow = keepOpen ? [...host.querySelectorAll('details[open]')].map(d => d.dataset.id) : [openLesson];
+  host.textContent = '';
+  let day = 0;
+  const dayNames = { 1: 'Day 1 · Code that drives', 2: 'Day 2 · Autonomous', 3: 'Day 3 · Competition level' };
+  LESSONS.forEach((L, i) => {
+    if (L.day !== day) { day = L.day; const h = document.createElement('div'); h.className = 'daylabel'; h.textContent = dayNames[day]; host.appendChild(h); }
+    const d = document.createElement('details'); d.className = 'lesson'; d.dataset.id = L.id;
+    if (openNow.includes(L.id)) d.open = true;
+    const done = progress[L.id], live = activeChallenge && activeChallenge.lessonId === L.id;
+    d.innerHTML = `<summary><span class="lnum">${i + 1}</span><span><span class="ltitle">${esc(L.title)}</span><br><span class="lmeta">about ${L.mins} min${L.challenge ? ' · challenge' : ' · reading'}</span></span>
+      <span class="pill ${done ? 'ok' : live ? 'live' : ''}">${done ? 'Passed' : live ? 'Active' : L.challenge ? 'To do' : 'Read'}</span></summary>
+      <div class="lbody">${L.html}${L.challenge ? `<div class="challenge"><div class="chtitle">Challenge · ${esc(L.challenge.title)}</div><div>${esc(L.challenge.text)}</div>
+      <div class="row"><button class="btn sm primary" data-challenge="${L.id}">${live ? 'Restart challenge' : 'Start challenge'}</button>${L.challenge.solution ? btnSol(L.challenge.solution) : ''}</div></div>` : ''}</div>`;
+    d.addEventListener('toggle', () => { if (d.open) { openLesson = L.id; store.set('bbsim.openLesson', L.id); } });
+    host.appendChild(d);
+  });
+  const passed = LESSONS.filter(L => progress[L.id]).length, total = LESSONS.filter(L => L.challenge).length;
+  const p = document.createElement('p'); p.className = 'small muted'; p.textContent = `${passed} of ${total} challenges passed.`;
+  host.appendChild(p);
+}
+$('lessons').addEventListener('click', (e) => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.open) { if (files[t.dataset.open]) openFile(t.dataset.open); }
+  else if (t.dataset.solution) addSolution(t.dataset.solution);
+  else if (t.dataset.challenge) startChallenge(LESSONS.find(L => L.id === t.dataset.challenge));
+  else if (t.dataset.newfile) newFile();
+});
+
+// ---------- Robot settings UI ----------
+function bindSettings() {
+  $('optDrive').value = settings.drive; $('optMotor').value = settings.motor; $('optWheel').value = settings.wheel; $('optSpeed').value = settings.speed;
+  $('optMirror').checked = settings.mirror; $('optVar').checked = settings.variation; $('cfgText').value = settings.cfg;
+  $('optDrive').addEventListener('change', e => { settings.drive = e.target.value; saveSettings(); });
+  $('optMotor').addEventListener('change', e => { settings.motor = e.target.value; saveSettings(); log('info', 'Motor change applies at the next INIT.'); });
+  $('optWheel').addEventListener('change', e => { settings.wheel = e.target.value; saveSettings(); });
+  $('optSpeed').addEventListener('change', e => { settings.speed = e.target.value; saveSettings(); });
+  $('optMirror').addEventListener('change', e => { settings.mirror = e.target.checked; saveSettings(); });
+  $('optVar').addEventListener('change', e => { settings.variation = e.target.checked; saveSettings(); });
+  $('cfgText').addEventListener('input', e => { settings.cfg = e.target.value; saveSettings(); const { errors } = parseConfig(settings.cfg); $('cfgMsg').textContent = errors.length ? errors[0] : 'Saved. Applies at the next INIT.'; });
+  $('btnCfgReset').addEventListener('click', () => { settings.cfg = DEFAULT_CFG; $('cfgText').value = DEFAULT_CFG; saveSettings(); $('cfgMsg').textContent = 'Default configuration restored.'; });
+}
+
+// ---------- Input ----------
+const keys = new Set();
+const touchBtn = {}; const touchStick = { L: null, R: null };
+const isEditable = (el) => el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.isContentEditable);
+const DRIVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyI', 'KeyJ', 'KeyK', 'KeyL', 'KeyQ', 'KeyE', 'KeyZ', 'KeyC', 'KeyT', 'KeyF', 'KeyG', 'KeyH', 'Space']);
+window.addEventListener('keydown', (e) => {
+  if (isEditable(document.activeElement) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!DRIVE_KEYS.has(e.code)) return;
+  keys.add(e.code);
+  if (document.activeElement === $('field') || run.state === 'running') e.preventDefault();
+});
+window.addEventListener('keyup', (e) => keys.delete(e.code));
+window.addEventListener('blur', () => keys.clear());
+function bindStick(id, side) {
+  const el = $(id);
+  const set = (e) => { const r = el.getBoundingClientRect(); const rad = r.width / 2; let x = (e.clientX - r.left - rad) / (rad * 0.75), y = (e.clientY - r.top - rad) / (rad * 0.75); const m = Math.hypot(x, y); if (m > 1) { x /= m; y /= m; } touchStick[side] = { x, y }; };
+  el.addEventListener('pointerdown', (e) => { el.setPointerCapture(e.pointerId); set(e); });
+  el.addEventListener('pointermove', (e) => { if (el.hasPointerCapture(e.pointerId)) set(e); });
+  const end = () => { touchStick[side] = null; };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+}
+bindStick('stickL', 'L'); bindStick('stickR', 'R');
+document.querySelectorAll('.gb').forEach(b => {
+  const n = b.dataset.btn;
+  b.addEventListener('pointerdown', (e) => { b.setPointerCapture(e.pointerId); touchBtn[n] = true; });
+  const up = () => { touchBtn[n] = false; };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+});
+let padSeen = false;
+function readRealPad(index) {
+  let pads; try { pads = navigator.getGamepads ? navigator.getGamepads() : []; } catch (e) { return null; }
+  const p = pads && [...pads].filter(Boolean)[index];
+  if (!p) return null;
+  if (!padSeen) { padSeen = true; $('padStatus').textContent = 'Controller connected: ' + (p.id || '').slice(0, 40); }
+  const dz = (v) => Math.abs(v) < 0.06 ? 0 : v; const bt = (i) => !!(p.buttons[i] && p.buttons[i].pressed); const bv = (i) => p.buttons[i] ? p.buttons[i].value : 0;
+  return { left_stick_x: dz(p.axes[0] || 0), left_stick_y: dz(p.axes[1] || 0), right_stick_x: dz(p.axes[2] || 0), right_stick_y: dz(p.axes[3] || 0),
+    a: bt(0), b: bt(1), x: bt(2), y: bt(3), left_bumper: bt(4), right_bumper: bt(5), left_trigger: bv(6), right_trigger: bv(7), back: bt(8), start: bt(9),
+    left_stick_button: bt(10), right_stick_button: bt(11), dpad_up: bt(12), dpad_down: bt(13), dpad_left: bt(14), dpad_right: bt(15), guide: bt(16) };
+}
+function pollInput() {
+  const k = (c) => keys.has(c) ? 1 : 0;
+  let st = {
+    left_stick_x: k('KeyD') - k('KeyA'), left_stick_y: k('KeyS') - k('KeyW'),
+    right_stick_x: k('ArrowRight') - k('ArrowLeft'), right_stick_y: k('ArrowDown') - k('ArrowUp'),
+    a: !!k('KeyK'), b: !!k('KeyL'), x: !!k('KeyJ'), y: !!k('KeyI'), left_bumper: !!k('KeyQ'), right_bumper: !!k('KeyE'),
+    left_trigger: k('KeyZ'), right_trigger: k('KeyC'), dpad_up: !!k('KeyT'), dpad_left: !!k('KeyF'), dpad_down: !!k('KeyG'), dpad_right: !!k('KeyH')
+  };
+  if (st.left_stick_x && st.left_stick_y) { st.left_stick_x *= Math.SQRT1_2; st.left_stick_y *= Math.SQRT1_2; }
+  if (touchStick.L) { st.left_stick_x = touchStick.L.x; st.left_stick_y = touchStick.L.y; }
+  if (touchStick.R) { st.right_stick_x = touchStick.R.x; st.right_stick_y = touchStick.R.y; }
+  for (const [n, v] of Object.entries(touchBtn)) if (v) st[n] = true;
+  const real = readRealPad(0);
+  if (real) { for (const [n, v] of Object.entries(real)) { if (typeof v === 'number') { if (Math.abs(v) > Math.abs(st[n] || 0)) st[n] = v; } else if (v) st[n] = true; } }
+  gamepad1._set(st);
+  const real2 = readRealPad(1); gamepad2._set(real2 || {});
+  // draw
+  const kn = (id, x, y) => { const el = $(id).firstElementChild, r = $(id).clientWidth / 2 - 20; el.style.transform = `translate(${x * r * 0.8}px, ${y * r * 0.8}px)`; };
+  kn('stickL', gamepad1.left_stick_x, gamepad1.left_stick_y); kn('stickR', gamepad1.right_stick_x, gamepad1.right_stick_y);
+  document.querySelectorAll('.gb').forEach(b => b.classList.toggle('on', !!gamepad1[b.dataset.btn]));
+  $('ltBar').style.width = (gamepad1.left_trigger * 100) + '%'; $('rtBar').style.width = (gamepad1.right_trigger * 100) + '%';
+}
+
+// ---------- Rendering ----------
+const cv = $('field'), ctx2 = cv.getContext('2d');
+let C = {};
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const n of ['tile', 'tile2', 'seam', 'wall', 'robot', 'robot-edge', 'wheel', 'fwd', 'rev', 'zone', 'trail', 'accent', 'muted', 'panel', 'ink']) C[n] = cs.getPropertyValue('--' + n).trim(); }
+readColors();
+try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors); } catch (e) { /* older browsers */ }
+new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
+function draw() {
+  const dpr = window.devicePixelRatio || 1, size = Math.round(cv.clientWidth * dpr);
+  if (!size) return;
+  if (cv.width !== size) { cv.width = size; cv.height = size; }
+  const k = size / FIELD, g = ctx2;
+  const X = (x) => (x + FH) * k, Y = (y) => (FH - y) * k;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { g.fillStyle = (i + j) % 2 ? C.tile2 : C.tile; g.fillRect(i * 24 * k, j * 24 * k, 24 * k + 1, 24 * k + 1); }
+  g.strokeStyle = C.seam; g.lineWidth = Math.max(1, k * 0.25);
+  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(i * 24 * k, 0); g.lineTo(i * 24 * k, size); g.stroke(); g.beginPath(); g.moveTo(0, i * 24 * k); g.lineTo(size, i * 24 * k); g.stroke(); }
+  g.fillStyle = C.muted; g.font = `${Math.max(9, k * 2.6)}px "JetBrains Mono", monospace`; g.textBaseline = 'top';
+  for (let v = -48; v <= 48; v += 24) { g.fillText(String(v), X(v) + 3, Y(-FH) - k * 4); g.fillText(String(v), X(-FH) + 3, Y(v) + 2); }
+  g.fillText('1 tile = 24 in', X(-FH) + 4, 4);
+  // zone + marks
+  const ch = activeChallenge;
+  if (ch && ch.zone) {
+    const z = ch.zone; g.fillStyle = C.zone; g.globalAlpha = 0.16; g.fillRect(X(z.x - z.w / 2), Y(z.y + z.h / 2), z.w * k, z.h * k); g.globalAlpha = 1;
+    g.setLineDash([k * 2, k * 1.5]); g.strokeStyle = C.zone; g.lineWidth = Math.max(1.5, k * 0.4); g.strokeRect(X(z.x - z.w / 2), Y(z.y + z.h / 2), z.w * k, z.h * k); g.setLineDash([]);
+    g.fillStyle = C.zone; g.font = `600 ${Math.max(10, k * 3)}px Barlow, sans-serif`; g.fillText(z.label || 'Zone', X(z.x - z.w / 2) + 4, Y(z.y + z.h / 2) + 4);
+  }
+  if (ch && ch.marks) for (const set of [ch.marks, ch.marksAlt || []]) for (const mk of set) { g.strokeStyle = C.zone; g.lineWidth = Math.max(1.5, k * 0.4); g.beginPath(); g.arc(X(mk.x), Y(mk.y), 6 * k, 0, Math.PI * 2); g.stroke(); }
+  if (ch && ch.start) { g.save(); g.translate(X(ch.start.x), Y(ch.start.y)); g.rotate(-(ch.start.hDeg) * Math.PI / 180); g.setLineDash([k, k]); g.strokeStyle = C.muted; g.lineWidth = 1; g.strokeRect(-HALF * k, -HALF * k, ROBOT * k, ROBOT * k); g.restore(); }
+  // trail
+  if (sim.trail.length > 1) { g.strokeStyle = C.trail; g.lineWidth = Math.max(1.5, k * 0.5); g.lineJoin = 'round'; g.beginPath(); sim.trail.forEach((p, i) => i ? g.lineTo(X(p.x), Y(p.y)) : g.moveTo(X(p.x), Y(p.y))); g.lineTo(X(sim.pose.x), Y(sim.pose.y)); g.stroke(); }
+  // walls
+  g.strokeStyle = C.wall; g.lineWidth = Math.max(3, k * 1.2); g.strokeRect(g.lineWidth / 2, g.lineWidth / 2, size - g.lineWidth, size - g.lineWidth);
+  // robot
+  const p = sim.pose;
+  g.save(); g.translate(X(p.x), Y(p.y)); g.rotate(-p.h); g.scale(k, k);
+  g.fillStyle = C.robot; g.strokeStyle = C['robot-edge']; g.lineWidth = 0.35;
+  g.beginPath(); g.roundRect ? g.roundRect(-HALF, -HALF, ROBOT, ROBOT, 1.2) : g.rect(-HALF, -HALF, ROBOT, ROBOT); g.fill(); g.stroke();
+  g.fillStyle = C.accent; g.fillRect(HALF - 1.6, -HALF + 1, 1.6, ROBOT - 2);
+  g.beginPath(); g.moveTo(HALF - 2.5, 0); g.lineTo(HALF - 6.5, -3); g.lineTo(HALF - 6.5, 3); g.closePath(); g.fill();
+  const ws = sim.wheelSpeeds, maxS = 65;
+  const wheels = [['FL', 5.4, -6.8], ['FR', 5.4, 6.8], ['BL', -5.4, -6.8], ['BR', -5.4, 6.8]];
+  for (const [n, wx, wy] of wheels) {
+    const v = ws[n] || 0;
+    g.fillStyle = Math.abs(v) < 0.5 ? C.wheel : v > 0 ? C.fwd : C.rev;
+    g.fillRect(wx - 2, wy - 0.9, 4, 1.8);
+    if (settings.drive === 'mecanum') { g.strokeStyle = C.robot; g.lineWidth = 0.25; const dir = (n === 'FL' || n === 'BR') ? 1 : -1; for (let t = -1.5; t <= 1.5; t += 1) { g.beginPath(); g.moveTo(wx + t - 0.5, wy - 0.8 * dir); g.lineTo(wx + t + 0.5, wy + 0.8 * dir); g.stroke(); } }
+    if (Math.abs(v) >= 0.5) {
+      const len = clip(Math.abs(v) / maxS, 0.15, 1) * 7 * Math.sign(v), oy = wy + (wy < 0 ? -2.1 : 2.1);
+      g.strokeStyle = g.fillStyle; g.lineWidth = 0.6; g.beginPath(); g.moveTo(wx, oy); g.lineTo(wx + len, oy); g.stroke();
+      g.beginPath(); g.moveTo(wx + len, oy); g.lineTo(wx + len - Math.sign(len) * 1.2, oy - 0.8); g.lineTo(wx + len - Math.sign(len) * 1.2, oy + 0.8); g.closePath(); g.fill();
+    }
+  }
+  g.restore();
+  drawMech();
+}
+const mc = $('mechCanvas'), mg = mc.getContext('2d');
+function drawMech() {
+  const claw = clawServo();
+  if (!sim.armUsed && !claw) { $('mechText').textContent = 'Arm and claw appear when your code uses the "arm" motor or "claw" servo.'; mg.clearRect(0, 0, mc.width, mc.height); return; }
+  mg.clearRect(0, 0, mc.width, mc.height);
+  const bx = 60, by = 118, L = 90, a = sim.armAngle * Math.PI / 180;
+  mg.strokeStyle = C.muted; mg.lineWidth = 2; mg.beginPath(); mg.moveTo(10, by + 14); mg.lineTo(230, by + 14); mg.stroke();
+  mg.fillStyle = C.robot; mg.fillRect(bx - 22, by, 44, 14);
+  const ex = bx + Math.cos(a) * L, ey = by - Math.sin(a) * L;
+  mg.strokeStyle = C.accent; mg.lineWidth = 8; mg.lineCap = 'round'; mg.beginPath(); mg.moveTo(bx, by); mg.lineTo(ex, ey); mg.stroke();
+  const cp = claw ? physicalServoPos(claw) : null, gap = cp == null ? 10 : 4 + cp * 22;
+  const nx = -Math.sin(a), ny = -Math.cos(a), dx = Math.cos(a), dy = -Math.sin(a);
+  mg.strokeStyle = C.ink; mg.lineWidth = 4;
+  for (const s of [-1, 1]) { const sx = ex + nx * gap / 2 * s, sy = ey + ny * gap / 2 * s; mg.beginPath(); mg.moveTo(sx, sy); mg.lineTo(sx + dx * 16, sy + dy * 16); mg.stroke(); }
+  mg.fillStyle = C.ink; mg.beginPath(); mg.arc(bx, by, 5, 0, Math.PI * 2); mg.fill();
+  $('mechText').textContent = `Arm ${sim.armUsed ? sim.armAngle.toFixed(1) + '°' : 'unused'} · Claw ${cp == null ? 'unused' : cp.toFixed(2)}`;
+}
+
+// ---------- Main loop ----------
+let lastFrame = nowMs(), frame = 0;
+function tickFrame() {
+  const t = nowMs();
+  let dt = Math.min(0.05, (t - lastFrame) / 1000) * (Number(settings.speed) || 1);
+  lastFrame = t;
+  pollInput();
+  physics(dt);
+  if (run.state !== 'idle') {
+    const ip = run.initPose; if (ip) run.maxHeadDev = Math.max(run.maxHeadDev, Math.abs(normDeg((sim.pose.h - ip.h) * 180 / Math.PI)));
+    if (run.matchEnd && t > run.matchEnd && !run.stopRequested) requestStop('timer');
+    if (t - run.loopWindowStart > 500) { run.loopHz = run.loops / ((t - run.loopWindowStart) / 1000); run.loops = 0; run.loopWindowStart = t; $('loopHz').textContent = Math.round(run.loopHz) + ' /s'; }
+    if (run.state === 'running') evaluateChallenge('live');
+  } else if (frame % 30 === 0) $('loopHz').textContent = '–';
+  if (frame % 6 === 0) {
+    const yaw = yawDeg();
+    $('poseText').textContent = `x ${sim.pose.x.toFixed(1)}  y ${sim.pose.y.toFixed(1)} in  heading ${normDeg(sim.pose.h * 180 / Math.PI).toFixed(1)}°  IMU yaw ${yaw.toFixed(1)}°`;
+    $('speedText').textContent = `${sim.speed.toFixed(1)} in/s${sim.wall ? '  · touching wall' : ''}`;
+    const mc2 = $('matchClock');
+    if (run.state === 'running' && run.matchEnd) { const left = Math.max(0, (run.matchEnd - t) / 1000); mc2.textContent = `${run.annType === 'Autonomous' ? 'Auto' : 'TeleOp'} ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`; }
+    else mc2.textContent = run.state === 'init' ? 'waiting for START' : '–';
+  }
+  draw(); frame++;
+  requestAnimationFrame(tickFrame);
+}
+
+// ---------- Boot ----------
+(async function boot() {
+  bindSettings();
+  editor.value = files[activeFile]; renderFiles();
+  renderLessons(false);
+  showPane(store.get('bbsim.pane', 'learn'));
+  placeRobot(START); buildHardware();
+  await compileWorkspace(files); lastCompileAt = Date.now();
+  refreshOpModes(); showCompileStatusFor(activeFile);
+  for (const e of compileErrors) log('err', `${e.file}${e.line ? ' line ' + e.line : ''}: ${e.message}`);
+  log('info', `Loaded ${Object.keys(files).length} files. ${opModeList().length} OpModes ready. Pick one, press INIT, then START.`);
+  setStateUI(); renderTelemetry();
+  requestAnimationFrame(tickFrame);
+})();
+</script>
+</body>
+</html>
