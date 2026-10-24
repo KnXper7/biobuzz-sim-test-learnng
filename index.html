@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="FTC robot simulator and 3-day course for the Biobuzz team code.">
 <style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Biobuzz Robot Sim</title>
+<title>Biobuzz Playground</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -37,6 +37,8 @@
   --rev: #d33a3a;
   --zone: #d9530f;
   --trail: rgba(217, 83, 15, .55);
+  --red: #d63031;
+  --blue: #2563d9;
   --screen: #10151b;
   --screen-ink: #d6f5e1;
   --screen-dim: #7f9a8a;
@@ -51,7 +53,7 @@
     --bad: #ff6b6b; --bad-soft: #3a1c1c; --warn: #e2b44a;
     --tile: #2b3037; --tile2: #282d33; --seam: #3b424b; --wall: #8a94a0; --robot: #cfd6de; --robot-edge: #f2f5f8; --wheel: #6f7884;
     --fwd: #45c47a; --rev: #ff6b6b; --zone: #ff7b33; --trail: rgba(255, 123, 51, .55);
-    --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
+    --red: #ff5c5c; --blue: #5b8dff; --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
     color-scheme: dark;
   }
 }
@@ -61,7 +63,7 @@
   --bad: #ff6b6b; --bad-soft: #3a1c1c; --warn: #e2b44a;
   --tile: #2b3037; --tile2: #282d33; --seam: #3b424b; --wall: #8a94a0; --robot: #cfd6de; --robot-edge: #f2f5f8; --wheel: #6f7884;
   --fwd: #45c47a; --rev: #ff6b6b; --zone: #ff7b33; --trail: rgba(255, 123, 51, .55);
-  --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
+  --red: #ff5c5c; --blue: #5b8dff; --screen: #0a0e12; --screen-ink: #c8f0d6; --screen-dim: #6e8a7a;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -205,6 +207,32 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
 .xitem b { display: block; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
 .xitem.mine { border-left-color: var(--accent); } .xitem.bug { border-left-color: var(--bad); } .xitem.warn, .xitem.tip { border-left-color: var(--warn); }
 .xitem code { font-family: var(--f-mono); font-size: 12.5px; background: var(--sunk); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+
+/* game */
+.gamebar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); align-items: end; }
+.gamebar .row { grid-column: 1 / -1; }
+.gb2 { display: grid; gap: 3px; min-width: 0; }
+.gb2 span { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.gb2 select { padding: 6px 8px; font-size: 13px; }
+@media (max-width: 560px) { .gamebar { grid-template-columns: minmax(0, 1fr); } }
+.scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 0 12px; }
+.sb { display: flex; align-items: baseline; gap: 10px; padding: 6px 12px; border-radius: 8px; font-family: var(--f-display); font-weight: 700; letter-spacing: .08em; }
+.sb b { font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.sb.red { background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red); }
+.sb.blue { background: color-mix(in srgb, var(--blue) 16%, transparent); color: var(--blue); justify-content: flex-end; }
+.sbmid { display: grid; text-align: center; font-family: var(--f-display); letter-spacing: .1em; }
+.sbmid b { font-size: 15px; } .sbmid span { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sbrows { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 2px 14px; padding: 8px 12px 0; font-size: 12.5px; color: var(--muted); }
+.sbrows b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.rpline { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; }
+.chip { font: 600 11.5px var(--f-body); letter-spacing: .03em; padding: 4px 8px; border-radius: 99px; background: var(--sunk); border: 1px solid var(--line); color: var(--muted); }
+.chip.on { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+.mechline { padding: 8px 12px 0; font: 12.5px var(--f-mono); color: var(--ink); }
+.rules { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.rules th, .rules td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.rules th:not(:first-child), .rules td:not(:first-child) { text-align: center; width: 64px; font-variant-numeric: tabular-nums; }
+.rules th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.rulelist { padding-left: 18px; margin: 4px 0; } .rulelist li { margin: 3px 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -212,23 +240,49 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
 
 <div class="wrap">
   <header class="top">
-    <div class="brand">Biobuzz <b>Robot Sim</b></div>
-    <div class="sub">Runs your team's TeamCode from <code>Sparky384/2026-Biobuzz</code> on a virtual robot. FTC SDK 12.0 API, Java subset.</div>
+    <div class="brand">Biobuzz <b>Playground</b></div>
+    <div class="sub">Your team's Java on a virtual robot in the 2026-27 BIOBUZZ arena. Code from <code>Sparky384/2026-Biobuzz</code>, FTC SDK 12.0 API.</div>
   </header>
 
   <div class="grid">
     <section class="card" aria-label="Learn and code">
       <div class="tabs" role="tablist">
-        <button class="tab" role="tab" id="tab-learn" aria-selected="true" data-pane="learn">Lessons</button>
+        <button class="tab" role="tab" id="tab-code" aria-selected="true" data-pane="code">Code</button>
         <button class="tab" role="tab" id="tab-explain" aria-selected="false" data-pane="explain">Explain my code</button>
-        <button class="tab" role="tab" id="tab-code" aria-selected="false" data-pane="code">Code</button>
+        <button class="tab" role="tab" id="tab-game" aria-selected="false" data-pane="game">BIOBUZZ rules</button>
         <button class="tab" role="tab" id="tab-robot" aria-selected="false" data-pane="robot">Robot setup</button>
       </div>
 
-      <div class="pane" id="pane-learn" role="tabpanel">
-        <p class="small muted" style="margin:0 0 12px">Three days, twelve lessons. Every lesson works with your team's real files, and each challenge is checked automatically on the field. Progress is saved in this browser.</p>
-        <div class="callout small" style="margin:0 0 14px">Wrote code you don't fully understand yet? Open <button class="linkbtn" data-goto="explain">Explain my code</button>, click any line, and it tells you what that line does and whether it has a bug.</div>
-        <div id="lessons"></div>
+      <div class="pane" id="pane-game" role="tabpanel" hidden>
+        <p class="small muted" style="margin:0 0 10px">From the 2026-27 Competition Manual (TU06). The sim scores all of this live.</p>
+        <table class="rules">
+          <thead><tr><th>Scoring</th><th>Auto</th><th>TeleOp</th></tr></thead>
+          <tbody>
+            <tr><td>LEAVE: robot off the perimeter wall at the end of AUTO</td><td>3</td><td>–</td></tr>
+            <tr><td>PARK: robot partly in your LOADING ZONE</td><td>5</td><td>5</td></tr>
+            <tr><td>HIVE TIP: launch enough into your up CELL that it flips</td><td>20</td><td>20</td></tr>
+            <tr><td>Each POLLEN / NECTAR left in your up CELL at the end</td><td>–</td><td>2</td></tr>
+            <tr><td>Each element in a FLOWER you own (your NECTAR is top-most)</td><td>–</td><td>2</td></tr>
+            <tr><td>Bottom NECTAR bonus (your NECTAR is lowest in a FLOWER)</td><td>–</td><td>5</td></tr>
+            <tr><td>Each POLLEN / NECTAR in your GARDEN at the end</td><td>–</td><td>1</td></tr>
+          </tbody>
+        </table>
+        <h4 class="fieldlabel" style="margin-top:14px">Rules the sim enforces</h4>
+        <ul class="small rulelist">
+          <li><b>G407</b> Hold at most 4 elements (the sim's hopper holds 4).</li>
+          <li><b>G408</b> Don't hold blue NECTAR. Spit it out.</li>
+          <li><b>G410</b> NECTAR into a FLOWER only in the last 60 s (MAJOR FOUL, 20).</li>
+          <li><b>G418</b> Only take POLLEN out of the bottom of a FLOWER.</li>
+          <li><b>G426/427</b> Human player enters 1 NECTAR per HIVE TIP, or all of them with 60 s left (MINOR FOUL, 5). Press <kbd>N</kbd>.</li>
+          <li><b>G403</b> Robot motionless during the 8 s transition.</li>
+        </ul>
+        <h4 class="fieldlabel" style="margin-top:14px">Sim settings</h4>
+        <div class="form">
+          <div class="field"><label for="optTip">HIVE tip weight (POLLEN = 1, NECTAR = 2)</label>
+            <select id="optTip"><option value="7">7</option><option value="8">8 (default)</option><option value="10">10</option><option value="12">12</option></select></div>
+          <label class="check"><input type="checkbox" id="optPreview" checked><span>Show shot preview (dotted arc; circle where it would drop into a CELL)</span></label>
+        </div>
+        <p class="small muted">The manual doesn't give a tip weight (it's set by the real HIVE's balance), so it's adjustable here. 3 NECTAR start in each up CELL without tipping it.</p>
       </div>
 
       <div class="pane" id="pane-explain" role="tabpanel" hidden>
@@ -242,7 +296,7 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
         <div id="explainCode" class="xcode"></div>
       </div>
 
-      <div class="pane" id="pane-code" role="tabpanel" hidden>
+      <div class="pane" id="pane-code" role="tabpanel">
         <div class="filebar" id="files"></div>
         <div class="editorwrap"><textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Java editor"></textarea></div>
         <div class="edstatus">
@@ -304,16 +358,28 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           <span><button class="btn sm" id="btnReset">Reset robot</button></span>
         </div>
       </div>
+      <div class="gamebar">
+        <label class="gb2"><span>Start</span><select id="startSelect"></select></label>
+        <label class="gb2"><span>Auto</span><select id="autoSelect"></select></label>
+        <label class="gb2"><span>TeleOp</span><select id="teleSelect"></select></label>
+        <div class="row"><button class="btn primary" id="btnMatch">Start match</button><button class="btn" id="btnField">Reset field</button><button class="btn" id="btnNectar" title="Human player (key N)">Enter NECTAR <kbd>N</kbd></button></div>
+      </div>
       <div class="fieldwrap">
         <canvas id="field" tabindex="0" aria-label="Field, 12 by 12 feet. Click here then drive with the keyboard."></canvas>
-        <div class="banner" id="banner" hidden><span id="bannerText"></span><button class="btn sm" id="btnEndChallenge">Exit</button></div>
       </div>
+      <div class="scoreboard">
+        <div class="sb red"><span>RED</span><b id="scoreRed">0</b></div>
+        <div class="sbmid"><b id="phaseLabel">FREE PLAY</b><span id="phaseTime"></span></div>
+        <div class="sb blue"><b id="scoreBlue">0</b><span>BLUE</span></div>
+      </div>
+      <div class="sbrows" id="scoreRows"></div>
+      <div class="rpline" id="rpLine"></div>
+      <div class="mechline" id="mechText"></div>
       <div class="poseline"><span id="poseText"></span><span id="speedText"></span></div>
       <div class="lower">
         <div>
           <div class="screenhead"><span>Driver Hub telemetry</span><span id="teleCount"></span></div>
           <div class="screen" id="telemetry"><span class="dim">Telemetry appears here after your code calls telemetry.update().</span></div>
-          <div class="mech"><canvas id="mechCanvas" width="240" height="144" aria-label="Arm and claw"></canvas><span id="mechText">Arm and claw appear when your code uses the "arm" motor or "claw" servo.</span></div>
         </div>
         <div>
           <div class="screenhead"><span>Robot log</span><button class="btn sm" id="btnClearLog">Clear</button></div>
@@ -345,7 +411,7 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           </div>
           <div class="stick" id="stickR" aria-label="Right stick"><div class="knob"></div><div class="lab">right stick</div></div>
         </div>
-        <div class="keys">Keyboard (click the field first): left stick <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · right stick <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> · A B X Y <kbd>K</kbd><kbd>L</kbd><kbd>J</kbd><kbd>I</kbd> · bumpers <kbd>Q</kbd><kbd>E</kbd> · triggers <kbd>Z</kbd><kbd>C</kbd> · dpad <kbd>T</kbd><kbd>F</kbd><kbd>G</kbd><kbd>H</kbd> · <span id="padStatus">A USB/Bluetooth controller works too.</span></div>
+        <div class="keys">Keyboard (click the field first): left stick <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · right stick <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> · A B X Y <kbd>K</kbd><kbd>L</kbd><kbd>J</kbd><kbd>I</kbd> · bumpers <kbd>Q</kbd><kbd>E</kbd> · triggers <kbd>Z</kbd><kbd>C</kbd> · dpad <kbd>T</kbd><kbd>F</kbd><kbd>G</kbd><kbd>H</kbd> · human player <kbd>N</kbd><br>Biobuzz TeleOp: <kbd>W</kbd>/<kbd>S</kbd> drive, <kbd>←</kbd><kbd>→</kbd> turn, <kbd>C</kbd> intake, <kbd>Z</kbd> spit out, <kbd>L</kbd> flywheel on/off, hold <kbd>K</kbd> to shoot, <kbd>T</kbd>/<kbd>G</kbd> hood, <kbd>F</kbd>/<kbd>H</kbd> flywheel speed · <span id="padStatus">A USB/Bluetooth controller works too.</span></div>
       </div>
     </section>
   </div>
@@ -1060,6 +1126,192 @@ public class ${name} extends LinearOpMode {
     }
 }
 `;
+
+// ---------- BIOBUZZ playground examples ----------
+const EXAMPLES = {
+"BiobuzzTeleOp.java": HEADER + `import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+
+@TeleOp(name = "Biobuzz TeleOp", group = "Examples")
+public class BiobuzzTeleOp extends LinearOpMode {
+
+    @Override
+    public void runOpMode() {
+        DriveTrain driveTrain = new DriveTrain(hardwareMap);
+        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        DcMotorEx shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        CRServo feeder = hardwareMap.get(CRServo.class, "feeder");
+        Servo hood = hardwareMap.get(Servo.class, "hood");
+        NormalizedColorSensor color = hardwareMap.get(NormalizedColorSensor.class, "intakeColor");
+
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double shotVelocity = 1672;   // flywheel ticks/sec (dpad left/right)
+        double hoodPos = 1.0;         // 0 = flat 30 deg, 1 = steep 75 deg (dpad up/down)
+        boolean shooterOn = false;
+        boolean lastB = false;
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            // Drive: left stick forward/back, right stick turns
+            driveTrain.drive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
+
+            // Intake: right trigger in, left trigger spits out
+            if (gamepad1.right_trigger > 0.2) intake.setPower(1);
+            else if (gamepad1.left_trigger > 0.2) intake.setPower(-1);
+            else intake.setPower(0);
+
+            // B toggles the flywheel
+            if (gamepad1.b && !lastB) shooterOn = !shooterOn;
+            lastB = gamepad1.b;
+            shooter.setVelocity(shooterOn ? shotVelocity : 0);
+
+            // Tune the shot live
+            if (gamepad1.dpad_right) shotVelocity += 5;
+            if (gamepad1.dpad_left) shotVelocity -= 5;
+            if (gamepad1.dpad_up) hoodPos += 0.005;
+            if (gamepad1.dpad_down) hoodPos -= 0.005;
+            hoodPos = Range.clip(hoodPos, 0, 1);
+            hood.setPosition(hoodPos);
+
+            // Hold A to feed, but only once the flywheel is up to speed
+            boolean ready = shooterOn && shooter.getVelocity() > shotVelocity * 0.97;
+            feeder.setPower(gamepad1.a && ready ? 1 : 0);
+
+            NormalizedRGBA c = color.getNormalizedColors();
+            String next = c.alpha < 0.3 ? "empty" : c.blue > c.red ? "BLUE nectar" : c.green > 0.3 ? "pollen" : "red nectar";
+
+            telemetry.addData("Flywheel", "%.0f / %.0f ticks/s %s", shooter.getVelocity(), shotVelocity, ready ? "READY" : "");
+            telemetry.addData("Hood", "%.3f", hoodPos);
+            telemetry.addData("Next ball", next);
+            telemetry.update();
+        }
+    }
+}
+`,
+"BiobuzzAuto.java": HEADER + `import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+/*
+ * Start: "Red alliance wall, row 3", touching the wall, facing the HIVE, 4 POLLEN pre-loaded.
+ * 1. Shoot 2 POLLEN into the up CELL (audience side) -> HIVE TIPS (+20)
+ * 2. Slide over to face the other CELL, which is now up, and shoot the other 2
+ * 3. LEAVE the wall and PARK in the LOADING ZONE
+ */
+@Autonomous(name = "Biobuzz Auto", group = "Examples")
+public class BiobuzzAuto extends LinearOpMode {
+    static final double COUNTS_PER_INCH = 537.7 / ((96.0 / 25.4) * Math.PI);
+    static final double SHOT_VELOCITY = 1672;   // ticks/sec for a ~41 in shot
+    static final double HOOD = 1.0;             // steepest hood angle (75 deg)
+    static final double AIM = 6.7;              // degrees to turn toward each CELL
+
+    private DcMotor frontLeft, backLeft, frontRight, backRight;
+    private DcMotor[] drive;
+    private DcMotorEx shooter;
+    private CRServo feeder;
+    private IMU imu;
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        drive = new DcMotor[]{frontLeft, backLeft, frontRight, backRight};
+        for (DcMotor m : drive) m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        feeder = hardwareMap.get(CRServo.class, "feeder");
+        Servo hood = hardwareMap.get(Servo.class, "hood");
+        hood.setPosition(HOOD);
+
+        imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+
+        waitForStart();
+        imu.resetYaw();
+
+        shooter.setVelocity(SHOT_VELOCITY);
+        turnTo(-AIM);
+        shoot(2);                       // tips the HIVE
+
+        turnTo(90);
+        driveInches(19, 0.6);
+        turnTo(AIM);
+        shoot(2);                       // into the CELL that just flipped up
+        shooter.setVelocity(0);
+
+        driveInches(6, 0.5);            // LEAVE: off the wall
+        turnTo(90);
+        driveInches(22, 0.6);           // PARK: into the LOADING ZONE
+    }
+
+    private void shoot(int count) {
+        for (int i = 0; i < count && opModeIsActive(); i++) {
+            ElapsedTime t = new ElapsedTime();
+            while (opModeIsActive() && shooter.getVelocity() < SHOT_VELOCITY * 0.98 && t.seconds() < 2) {
+                telemetry.addData("Spinning up", "%.0f", shooter.getVelocity());
+                telemetry.update();
+            }
+            feeder.setPower(1);
+            sleep(150);
+            feeder.setPower(0);
+        }
+    }
+
+    private void driveInches(double inches, double power) {
+        int target = (int) Math.round(inches * COUNTS_PER_INCH);
+        for (DcMotor m : drive) m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        for (DcMotor m : drive) m.setTargetPosition(target);
+        for (DcMotor m : drive) m.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        for (DcMotor m : drive) m.setPower(power);
+        while (opModeIsActive() && (frontLeft.isBusy() || backLeft.isBusy() || frontRight.isBusy() || backRight.isBusy())) {
+            idle();
+        }
+        for (DcMotor m : drive) m.setPower(0);
+        for (DcMotor m : drive) m.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    private void turnTo(double degrees) {
+        ElapsedTime settled = new ElapsedTime();
+        while (opModeIsActive()) {
+            double error = AngleUnit.normalizeDegrees(degrees - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            if (Math.abs(error) > 1) settled.reset();
+            if (settled.seconds() > 0.2) break;
+            double rotate = Range.clip(error * 0.015, -0.5, 0.5);
+            if (Math.abs(rotate) < 0.05) rotate = 0.05 * Math.signum(rotate);
+            frontLeft.setPower(-rotate);
+            backLeft.setPower(-rotate);
+            frontRight.setPower(rotate);
+            backRight.setPower(rotate);
+        }
+        for (DcMotor m : drive) m.setPower(0);
+    }
+}
+`
+};
 // ================= Java-subset → JavaScript compiler =================
 class CompileError extends Error {
   constructor(file, line, msg) { super(msg); this.file = file; this.line = line; }
@@ -1368,13 +1620,17 @@ const DEFAULT_CFG = `motor frontLeft FL
 motor frontRight FR
 motor backLeft BL
 motor backRight BR
+motor intake
+motor shooter
+crservo feeder
+servo hood
 imu imu
-motor arm
-servo claw
+color intakeColor
 distance frontDistance
 touch frontBumper`;
 
 const settings = Object.assign({ drive: 'tank', motor: '312', wheel: '3.7795', mirror: true, variation: true, speed: '1', cfg: DEFAULT_CFG }, store.get('bbsim.settings', {}));
+if (settings.cfgVersion !== 2) { settings.cfg = DEFAULT_CFG; settings.cfgVersion = 2; }
 function saveSettings() { store.set('bbsim.settings', settings); }
 
 // ---------- Java-style string formatting ----------
@@ -1507,12 +1763,14 @@ function parseConfig(text) {
   const out = [], errors = [], names = new Set();
   text.split('\n').forEach((raw, i) => {
     const line = raw.replace(/#.*/, '').trim(); if (!line) return;
-    const [type, name, slot] = line.split(/\s+/);
-    if (!/^(motor|servo|crservo|imu|distance|touch)$/.test(type)) { errors.push(`Line ${i + 1}: unknown type "${type}"`); return; }
+    const [type, name, ...rest] = line.split(/\s+/);
+    let slot = null; const opts = {};
+    for (const t of rest) { const kv = /^(\w+)=([\d.]+)$/.exec(t); if (kv) opts[kv[1].toLowerCase()] = +kv[2]; else slot = t; }
+    if (!/^(motor|servo|crservo|imu|distance|touch|color)$/.test(type)) { errors.push(`Line ${i + 1}: unknown type "${type}"`); return; }
     if (!name) { errors.push(`Line ${i + 1}: missing a name`); return; }
     if (names.has(name)) { errors.push(`Line ${i + 1}: "${name}" is used twice`); return; }
     names.add(name);
-    out.push({ type, name, slot: slot ? slot.toUpperCase() : null });
+    out.push({ type, name, slot: slot ? slot.toUpperCase() : null, opts });
   });
   return { devices: out, errors };
 }
@@ -1523,7 +1781,8 @@ const TYPE_OK = {
   crservo: ['CRServo', 'CRServoImplEx', 'DcMotorSimple'],
   imu: ['IMU', 'BHI260IMU', 'BNO055IMUNew'],
   distance: ['DistanceSensor', 'Rev2mDistanceSensor', 'DistanceSensorEx'],
-  touch: ['TouchSensor', 'DigitalChannel', 'RevTouchSensor']
+  touch: ['TouchSensor', 'DigitalChannel', 'RevTouchSensor'],
+  color: ['ColorSensor', 'NormalizedColorSensor', 'RevColorSensorV3', 'ColorRangeSensor', 'DistanceSensor']
 };
 
 function enumObj(names) { const o = {}; for (const n of names) o[n] = n; return Object.freeze(o); }
@@ -1532,7 +1791,12 @@ const ZeroPowerBehavior = enumObj(['BRAKE', 'FLOAT', 'UNKNOWN']);
 const Direction = enumObj(['FORWARD', 'REVERSE']);
 
 function makeMotor(dev, variation) {
-  const spec = motorSpec();
+  let spec = motorSpec();
+  if (!dev.slot) {   // mechanism motors: sensible goBILDA defaults by name, overridable with rpm= / tpr= in the configuration
+    if (/shoot|fly|launch/i.test(dev.name)) spec = { rpm: 6000, tpr: 28 };          // 5202 bare motor, 1:1
+    else if (/intake|roller|sweep|feed|transfer/i.test(dev.name)) spec = { rpm: 1150, tpr: 145.1 };
+  }
+  spec = { rpm: dev.opts && dev.opts.rpm || spec.rpm, tpr: dev.opts && dev.opts.tpr || spec.tpr };
   const m = { dev, name: dev.name, slot: dev.slot, dir: 1, mode: 'RUN_WITHOUT_ENCODER', power: 0, target: 0, targetSet: false, tol: 5,
     shaftPos: 0, shaftVel: 0, zpb: 'BRAKE', var: variation ? 1 + (Math.random() * 2 - 1) * 0.035 : 1, tpr: spec.tpr, rpm: spec.rpm, used: false, velCmd: null };
   const pos = () => Math.round(m.shaftPos * m.dir);
@@ -1636,6 +1900,17 @@ function makeTouch(dev) {
   } };
 }
 
+function makeColor(dev) {
+  const rgb = () => { const b = game.hopper.length ? ballById(game.hopper[0]) : null; if (!b) return [0.04, 0.05, 0.05]; return b.kind === 'pollen' ? [0.62, 0.55, 0.08] : b.kind === 'red' ? [0.7, 0.08, 0.07] : [0.06, 0.14, 0.72]; };
+  const api = {
+    getNormalizedColors() { run.io = true; const [r, g, b] = rgb(); return { red: r, green: g, blue: b, alpha: r + g + b, __toString() { return `r=${r} g=${g} b=${b}`; } }; },
+    red() { return Math.round(rgb()[0] * 1000); }, green() { return Math.round(rgb()[1] * 1000); }, blue() { return Math.round(rgb()[2] * 1000); }, alpha() { const c = rgb(); return Math.round((c[0] + c[1] + c[2]) * 1000); }, argb() { return 0; },
+    getDistance(unit) { return convertIn(game.hopper.length ? 0.8 : 4.5, unit); }, setGain() {}, getGain() { return 2; }, enableLed() {},
+    getDeviceName() { return dev.name; }, __toString() { return 'ColorSensor ' + dev.name; }
+  };
+  return { dev, api };
+}
+
 let hwDevices = new Map();
 function buildHardware() {
   const { devices, errors } = parseConfig(settings.cfg);
@@ -1649,6 +1924,7 @@ function buildHardware() {
     else if (d.type === 'imu') obj = makeImu(d);
     else if (d.type === 'distance') obj = makeDistance(d);
     else if (d.type === 'touch') obj = makeTouch(d);
+    else if (d.type === 'color') obj = makeColor(d);
     hwDevices.set(d.name, obj);
   }
   sim.imuZero = sim.pose.h;
@@ -1838,8 +2114,9 @@ function stepMotors(dt) {
     // RUN_USING_ENCODER / RUN_TO_POSITION regulate velocity, so weak/strong motors match (until they hit their own max).
     const nominal = m.rpm / 60 * m.tpr;
     const regulated = m.mode === 'RUN_USING_ENCODER' || m.mode === 'RUN_TO_POSITION';
-    const target = m.dir * (regulated ? clip(cmd * nominal * 0.9, -maxTps, maxTps) : cmd * maxTps);
-    const tau = cmd === 0 ? (m.zpb === 'FLOAT' ? 0.55 : 0.05) : 0.08;
+    const target = m.dir * (regulated ? clip(m.velCmd != null && m.mode === 'RUN_USING_ENCODER' ? m.velCmd : cmd * nominal * 0.9, -maxTps, maxTps) : cmd * maxTps);
+    const heavy = m.tpr < 60;   // flywheel: big inertia, slow spin-up and coast-down
+    const tau = heavy ? (cmd === 0 ? 1.4 : 0.35) : cmd === 0 ? (m.zpb === 'FLOAT' ? 0.55 : 0.05) : 0.08;
     m.shaftVel += (target - m.shaftVel) * (1 - Math.exp(-dt / tau));
     m.shaftPos += m.shaftVel * dt;
     if (m.name === 'arm' || m.slot === 'ARM') {
@@ -1882,289 +2159,449 @@ function stepRobot(dt) {
 function physics(dt) {
   const steps = Math.max(1, Math.ceil(dt / 0.004));
   for (let i = 0; i < steps; i++) { stepMotors(dt / steps); stepRobot(dt / steps); }
+  gameStep(dt);
   const last = sim.trail[sim.trail.length - 1];
   if (!last || Math.hypot(last.x - sim.pose.x, last.y - sim.pose.y) > 0.6) { sim.trail.push({ x: sim.pose.x, y: sim.pose.y }); if (sim.trail.length > 3000) sim.trail.shift(); }
 }
-// ================= Curriculum =================
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const J = (s) => `<pre><code>${esc(s.replace(/^\n/, ''))}</code></pre>`;
-const btnFile = (f, label) => `<button class="btn sm" data-open="${f}">${label || 'Open ' + f}</button>`;
-const btnSol = (f) => `<button class="btn sm" data-solution="${f}">Show solution: ${f}</button>`;
+// ================= BIOBUZZ arena (Competition Manual TU06, §9–§11) =================
+// Field coordinates: inches, origin at field center, +x toward the BLUE alliance wall, +y away from the audience.
+// Red alliance area is on the left as seen from the audience (§9.5).
+const G_ = 386.1;                     // gravity, in/s²
+const POLLEN_R = 1.4, NECTAR_R = 1.8;  // 2.8 in / 3.6 in balls (§9.8)
+const HIVE = { red: { x: -12.75 }, blue: { x: 12.75 } };          // HIVE center-to-center 25.5 in (Fig 9-10)
+const CELL_Y = 15.44, CELL_HX = 10, CELL_HY = 6;                    // cells ~18.84 in apart, 20 in wide x 12 in deep (Fig 9-9, 9-11)
+const CELL_OPEN_Z = 58, CELL_BODY_Z = 31;                          // opening 53.5–65.6 in, bottom 30.6 in above tiles (Fig 9-10)
+const FRAME_LEGS = [[-19.5, -24.7], [19.5, -24.7], [-19.5, 24.7], [19.5, 24.7]]; // frame 38.95 in deep x 49.46 in wide (Fig 9-8)
+const FLOWER_TOP = 21.5, FLOWER_VOL_BOTTOM = 5.6, FLOWER_R = 3.2;   // top ring 21.5 in high, 4 in opening (§9.7)
+const FLOWERS_DEF = [{ x: -24, y: 68.5, name: 'Back flower' }, { x: 68.5, y: 24, name: 'Blue-wall flower' }, { x: 24, y: -68.5, name: 'Audience flower' }, { x: -68.5, y: -24, name: 'Red-wall flower' }];
+const LOADING = { red: { x0: -72, x1: -61, y0: 24, y1: 48 }, blue: { x0: 61, x1: 72, y0: -48, y1: -24 } };   // 23 x 11 in (§9.3)
+const GARDEN = { red: { x0: -72, x1: -49, y0: -72, y1: -70 }, blue: { x0: 49, x1: 72, y0: 70, y1: 72 } };     // 23 x 2 in, opposite corners
+const START_POSES = {
+  wall: { label: 'Red alliance wall, row 3 (facing HIVE)', x: -63, y: -9.5, hDeg: 0 },
+  audience: { label: 'Audience wall, column B (facing back)', x: -42, y: -63, hDeg: 90 },
+  back: { label: 'Back wall, column B (facing audience)', x: -42, y: 63, hDeg: -90 }
+};
+const PTS = { leave: 3, park: 5, tip: 20, cell: 2, bottom: 5, flower: 2, garden: 1, minor: 5, major: 20 };   // Table 10-2, 10-4
 
-const START = { x: 0, y: -48, hDeg: 90 };
-const inZone = (p, z) => Math.abs(p.x - z.x) <= z.w / 2 && Math.abs(p.y - z.y) <= z.h / 2;
-const ZONE_AHEAD = { x: 0, y: 12, w: 24, h: 24, label: 'Zone' };
-
-const LESSONS = [
-// ---------------- DAY 1 ----------------
-{ id: 'l1', day: 1, title: 'How your robot code runs', mins: 45, html: `
-<p>An FTC robot has two Android devices. The <b>Control Hub</b> sits on the robot, runs your Java and talks to motors and sensors. The <b>Driver Hub</b> sits with the drivers: it shows the OpMode list, the INIT / START / STOP buttons, telemetry, and reads the gamepads.</p>
-<h4>Your repo, in one minute</h4>
-<ul>
-<li><code>FtcRobotController/</code> is FIRST's SDK (version 12.0 this season). You rarely touch it.</li>
-<li><code>TeamCode/src/main/java/org/firstinspires/ftc/teamcode/</code> is <b>your</b> code: <code>MyFIRSTOpModeClass</code>, <code>TestAuto</code>, <code>DriveTrain</code>.</li>
-<li>Android Studio builds both into one app and installs it on the Control Hub over USB or Wi‑Fi (the green Run button).</li>
-</ul>
-<h4>The robot configuration</h4>
-<p>On the Driver Hub you create a configuration that names each port: "frontLeft" on motor port 0, and so on. <code>hardwareMap.get(DcMotor.class, "frontLeft")</code> looks that name up. The string must match exactly, capitals included, or the OpMode crashes at INIT. See the Robot setup tab for this sim's configuration.</p>
-<h4>An OpMode's life</h4>
-${J(`
-@TeleOp                                   // shows up in the TeleOp list
-public class MyFIRSTOpModeClass extends LinearOpMode {
-    @Override
-    public void runOpMode() {             // INIT pressed: starts here
-        frontLeft = hardwareMap.get(...); // 1. grab hardware
-        waitForStart();                   // 2. pauses until START
-        while (opModeIsActive()) {        // 3. repeats until STOP or time runs out
-            ... read gamepad, set motor power ...
-        }
-        ... runs once after STOP ...
-    }
-}`)}
-<p><code>@TeleOp</code> OpModes are for the 2‑minute driver period. <code>@Autonomous</code> OpModes run the 30‑second period with no drivers.</p>
-<div class="callout">Try it: pick <b>MyFIRSTOpModeClass</b> in the dropdown, press INIT, then START, click the field and hold <kbd>W</kbd>.</div>
-<div class="row">${btnFile('MyFIRSTOpModeClass.java')}</div>`,
-  challenge: { title: 'Find the bug by watching', text: 'Run MyFIRSTOpModeClass and push the left stick forward (W).', start: START, opmode: 'MyFIRSTOpModeClass',
-    check(c, phase) {
-      if (c.op.className !== 'MyFIRSTOpModeClass') return phase === 'end' ? { pass: false, msg: 'Run MyFIRSTOpModeClass for this one.' } : null;
-      if (c.headDev > 60) return { pass: true, msg: 'Spotted it: pushing forward makes the robot spin. Lesson 2 explains why.' };
-      return phase === 'end' ? { pass: false, msg: 'Hold W for a second while the OpMode is running and watch what the robot does.' } : null;
-    } } },
-
-{ id: 'l2', day: 1, title: 'Motor direction: why the robot spins', mins: 40, html: `
-<p>Motors on the left side of a chassis are mounted facing the opposite way from the right side. Give every motor <code>+0.5</code> and the right wheels roll forward while the left wheels roll backward, so the robot spins in place. Your TeleOp and TestAuto both do this.</p>
-<p>The fix is one line per motor on one side:</p>
-${J(`
-frontLeft.setDirection(DcMotor.Direction.REVERSE);
-backLeft.setDirection(DcMotor.Direction.REVERSE);`)}
-<p>Your <code>DriveTrain</code> class already has these lines. <code>MyFIRSTOpModeClass</code> and <code>TestAuto</code> don't, because they talk to the motors directly. That's a good argument for always going through <code>DriveTrain</code> (lesson 4).</p>
-<h4>The joystick is upside down</h4>
-<p>On FTC gamepads, pushing the stick <b>up</b> gives a <b>negative</b> <code>left_stick_y</code>. Your <code>gamepad1.left_stick_y * -1</code> is correct.</p>
-<h4>On a real robot</h4>
-<p>Put the robot on a box so the wheels spin freely, run a slow test, and check each wheel turns forward. If one side is backward, reverse that side. If a single wheel is backward, its motor is wired or configured on the wrong port.</p>
-<div class="row">${btnFile('MyFIRSTOpModeClass.java', 'Open your TeleOp to fix it')}</div>`,
-  challenge: { title: 'Drive straight', text: 'Fix the directions in MyFIRSTOpModeClass (or write your own TeleOp) and drive into the zone 2.5 tiles ahead without turning more than 25°.', start: START, zone: ZONE_AHEAD, opmode: 'MyFIRSTOpModeClass', solution: 'L2_DriveStraight.java',
-    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, ZONE_AHEAD) && c.headDev < 25) return { pass: true, msg: 'Straight into the zone. Motor directions fixed.' }; if (inZone(c.pose, ZONE_AHEAD)) return { pass: false, msg: 'You reached the zone but turned more than 25° on the way. Press Reset robot and drive straighter.' }; return null; } } },
-
-{ id: 'l3', day: 1, title: 'Telemetry and drive math', mins: 50, html: `
-<p><b>Telemetry</b> is how the robot talks back. It's your main debugging tool on the field.</p>
-${J(`
-telemetry.addData("Left power", left);   // queue a line
-telemetry.addData("Heading", "%.1f", h);  // printf-style formatting
-telemetry.update();                       // send the screen to the Driver Hub`)}
-<div class="callout">Your TeleOp calls <code>addData("Is Started", ...)</code> but never <code>telemetry.update()</code>, so nothing ever appears. Also, after <code>update()</code> the queue clears, so add your lines <b>inside</b> the loop every time.</div>
-<h4>Arcade drive math</h4>
-<p><code>left = drive + turn</code>, <code>right = drive - turn</code>. Full forward plus full right gives left = 2.0, right = 0.0. <code>setPower</code> clips at 1.0, so you get 1.0 / 0.0 and the turn is wrong. Divide both by the larger magnitude when it's over 1:</p>
-${J(`
-double max = Math.max(1.0, Math.max(Math.abs(left), Math.abs(right)));
-left /= max;
-right /= max;`)}
-<h4>Driver quality-of-life</h4>
-<ul><li><b>Slow mode</b>: multiply power by 0.4 while a bumper is held. Great for lining up.</li>
-<li><b>Deadzone</b>: ignore tiny stick values so a worn controller doesn't creep.</li>
-<li><b>Squared inputs</b>: <code>drive * Math.abs(drive)</code> gives finer control near the center.</li></ul>`,
-  challenge: { title: 'Show your numbers', text: 'While a TeleOp is running, show at least 3 telemetry lines (stick values, motor powers, an encoder count).', start: START, solution: 'L3_TelemetryDrive.java',
-    check(c) { if (c.op.annType === 'TeleOp' && c.op.state === 'running' && c.teleNow >= 3) return { pass: true, msg: 'Telemetry is on screen. Use it every time something looks wrong.' }; return null; } } },
-
-{ id: 'l4', day: 1, title: 'The Java you need: classes and subsystems', mins: 60, html: `
-<p>FTC Java uses a small part of the language. Learn these words by pointing at your own <code>DriveTrain.java</code>:</p>
-<ul>
-<li><b>class</b>: a blueprint. <code>public class DriveTrain { ... }</code></li>
-<li><b>field</b>: a variable the object keeps. <code>private DcMotor frontLeft;</code></li>
-<li><b>constructor</b>: runs once when you write <code>new DriveTrain(hardwareMap)</code>. Same name as the class, no return type.</li>
-<li><b>method</b>: something the object can do. <code>public void drive(double forward, double turn)</code></li>
-<li><b>extends</b>: <code>MyFIRSTOpModeClass extends LinearOpMode</code> inherits <code>hardwareMap</code>, <code>telemetry</code>, <code>gamepad1</code>, <code>waitForStart()</code>, <code>sleep()</code>.</li>
-<li>Types: <code>int</code> (whole number), <code>double</code> (decimal), <code>boolean</code> (true/false), <code>String</code> (text).</li>
-</ul>
-<h4>Why a subsystem class</h4>
-<p>Hardware names and motor directions now live in one file. Every TeleOp and Auto writes <code>new DriveTrain(hardwareMap)</code> and gets a correctly configured drivetrain. Strong teams do this for every mechanism: <code>Arm</code>, <code>Intake</code>, <code>Claw</code>.</p>
-${J(`
-DriveTrain driveTrain = new DriveTrain(hardwareMap);
-waitForStart();
-while (opModeIsActive()) {
-    driveTrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x);
-}`)}
-<h4>Review notes on DriveTrain.java</h4>
-<ul>
-<li><code>drive()</code> calls <code>setMode</code> on all four motors every loop. It works, but set the mode once in the constructor instead.</li>
-<li>It imports <code>LinearOpMode</code> and <code>TeleOp</code> but doesn't use them. Harmless; Android Studio greys them out.</li>
-<li><code>driveDistance()</code> has three real bugs. You'll fix them in lesson 6.</li>
-</ul>
-<div class="row">${btnFile('DriveTrain.java')}<button class="btn sm" data-newfile="1">New OpMode file</button></div>`,
-  challenge: { title: 'Use your DriveTrain', text: 'Write a TeleOp that creates new DriveTrain(hardwareMap) and drive into the zone.', start: START, zone: ZONE_AHEAD, solution: 'L4_SubsystemTeleOp.java',
-    check(c) { if (c.op.annType !== 'TeleOp') return null; const used = c.op.instantiated.has('DriveTrain'); if (inZone(c.pose, ZONE_AHEAD)) return used ? { pass: true, msg: 'Driving through your DriveTrain subsystem.' } : { pass: false, msg: 'You reached the zone, but this OpMode never created a DriveTrain. Use new DriveTrain(hardwareMap).' }; return null; } } },
-
-// ---------------- DAY 2 ----------------
-{ id: 'l5', day: 2, title: 'Timed autonomous (and why it drifts)', mins: 40, html: `
-<p>The simplest autonomous: set power, wait, stop. That's your <code>TestAuto</code>. It has two bugs:</p>
-<ol>
-<li>No motor directions, so it spins (lesson 2).</li>
-<li>${'<code>while (timer.milliseconds() &lt; 2000) { }</code>'} ignores STOP. If the referee or a driver hits STOP, the robot keeps driving for the rest of the 2 seconds. Add <code>opModeIsActive()</code> to every loop.</li>
-</ol>
-${J(`
-setMotorPower(0.5);
-timer.reset();
-while (opModeIsActive() && timer.seconds() < 1.6) {
-    telemetry.addData("Driving", "%.2f s", timer.seconds());
-    telemetry.update();
+const game = {
+  balls: [], nextId: 1, hives: null, flowers: [], stock: { red: 5, blue: 5 }, entered: { red: 0, blue: 0 },
+  hopper: [], capacity: 4, lastShot: 0, lastEject: 0, lastRetrieve: 0, fouls: { red: 0, blue: 0 }, foulLog: [],
+  match: { phase: 'free', phaseEnd: 0, start: 0, autoLeave: null, autoPark: null, autoOp: '', teleOp: '' },
+  tipWeight: 8, preview: true, lastShotInfo: null, opp: 0
+};
+function mkBall(kind, x, y, state, z) {
+  const b = { id: game.nextId++, kind, r: kind === 'pollen' ? POLLEN_R : NECTAR_R, x, y, z: z || 0, vx: 0, vy: 0, vz: 0, state: state || 'floor' };
+  if (b.state === 'floor') b.z = b.r;
+  game.balls.push(b); return b;
 }
-setMotorPower(0);`)}
-<p><code>sleep(1600);</code> does the same job in one line. Use it only in autonomous, never inside a TeleOp loop.</p>
-<h4>Why time-based autos are unreliable</h4>
-<p>Distance traveled depends on battery voltage, wheel wear, carpet and robot weight. Run your fixed auto three times with <b>Motor variation</b> on (Robot setup) and watch it land in a different spot each time. Encoders fix this next lesson.</p>
-<div class="row">${btnFile('TestAuto.java', 'Open TestAuto to fix it')}</div>`,
-  challenge: { title: 'Two tiles by the clock', text: 'With an Autonomous OpMode, finish with the robot center in the zone 2 tiles ahead.', start: START, zone: { x: 0, y: 0, w: 24, h: 24, label: '2 tiles' }, opmode: 'TestAuto', solution: 'L5_TimedAuto.java', endOnly: true,
-    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; return inZone(c.pose, this.zone) ? { pass: true, msg: 'Landed in the zone. Now try it 3 times in a row with motor variation on.' } : { pass: false, msg: `Ended at (${c.pose.x.toFixed(1)}, ${c.pose.y.toFixed(1)}). The zone is centered on (0, 0). Tune the time or power.` }; } } },
+const ballById = (id) => game.balls.find(b => b.id === id);
+const weightOf = (b) => b.kind === 'pollen' ? 1 : 2;
 
-{ id: 'l6', day: 2, title: 'Encoders: drive an exact distance', mins: 70, html: `
-<p>Each drive motor has an <b>encoder</b> that counts ticks as the shaft turns. A goBILDA 5203 312 RPM motor reports <b>537.7 ticks per output revolution</b>. Turn ticks into inches with the wheel's circumference:</p>
-${J(`
-static final double COUNTS_PER_MOTOR_REV = 537.7;
-static final double WHEEL_DIAMETER_INCHES = 96.0 / 25.4;   // 96 mm = 3.78 in
-static final double COUNTS_PER_INCH =
-        COUNTS_PER_MOTOR_REV / (WHEEL_DIAMETER_INCHES * Math.PI);   // ≈ 45.3`)}
-<p>Encoder modes also fix drift: in <code>RUN_USING_ENCODER</code> and <code>RUN_TO_POSITION</code>, <code>setPower(0.6)</code> means "60% of max <i>speed</i>" and the hub adjusts voltage to hold it, so a weak motor and a strong one match.</p>
-<p>Check your robot's actual motor and wheel. A different gearbox or wheel changes this number, and every autonomous depends on it.</p>
-<h4>RUN_TO_POSITION: the order matters</h4>
-${J(`
-m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // 0. zero the count
-m.setTargetPosition(target);                       // 1. target FIRST
-m.setMode(DcMotor.RunMode.RUN_TO_POSITION);        // 2. then the mode
-m.setPower(0.6);                                   // 3. then power, or it never moves
-while (opModeIsActive() && m.isBusy()) { }         // 4. wait for it to arrive
-m.setPower(0);`)}
-<div class="callout"><b>Your <code>driveDistance()</code></b> sets RUN_TO_POSITION before the target (the SDK throws <code>TargetPositionNotSetException</code>), never sets power, never waits, and passes inches straight in as ticks. Run it in the sim to see the first error yourself, then fix all four.</div>`,
-  challenge: { title: 'Stop on the line', text: 'Autonomous: drive exactly 48 in (2 tiles). End within 2 in of the target point and within 5° of straight.', start: START, zone: { x: 0, y: 0, w: 4, h: 4, label: '±2 in' }, solution: 'L6_EncoderAuto.java', endOnly: true,
-    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const dx = Math.abs(c.pose.x), dy = Math.abs(c.pose.y), dh = Math.abs(c.yawFromStart);
-      if (dx <= 2 && dy <= 2 && dh <= 5) return { pass: true, msg: `Ended ${Math.hypot(dx, dy).toFixed(2)} in from the target. That's what encoders buy you.` };
-      return { pass: false, msg: `Ended ${dy.toFixed(1)} in short/long, ${dx.toFixed(1)} in sideways, ${dh.toFixed(1)}° off. Check COUNTS_PER_INCH and the RUN_TO_POSITION order.` }; } } },
+function resetField() {
+  game.balls = []; game.nextId = 1; game.hopper = []; game.fouls = { red: 0, blue: 0 }; game.foulLog = [];
+  game.stock = { red: 5, blue: 5 }; game.entered = { red: 0, blue: 0 }; game.lastShotInfo = null;
+  // HIVES: the CELL that points at a FLOWER starts tilted down (§10.3.1). Red: audience-side cell up. Blue: back cell up.
+  game.hives = { red: { x: HIVE.red.x, up: 'S', cells: { N: [], S: [] }, tips: 0, tipsAuto: 0, flash: 0 }, blue: { x: HIVE.blue.x, up: 'N', cells: { N: [], S: [] }, tips: 0, tipsAuto: 0, flash: 0 } };
+  for (const al of ['red', 'blue']) for (let i = 0; i < 3; i++) { const h = game.hives[al]; const b = mkBall(al, h.x, cellY(h.up), 'cell'); h.cells[h.up].push(b.id); }  // 3 NECTAR in each up CELL
+  // FLOWERS: 4 POLLEN each
+  game.flowers = FLOWERS_DEF.map(f => ({ ...f, stack: [] }));
+  for (const f of game.flowers) for (let i = 0; i < 4; i++) { const b = mkBall('pollen', f.x, f.y, 'flower'); f.stack.push(b.id); }
+  // GARDENS: 4 POLLEN in a line from the corner nearest the ALLIANCE AREA
+  for (let i = 0; i < 4; i++) { mkBall('pollen', -70.6 + i * 2.85, -70.6); mkBall('pollen', 70.6 - i * 2.85, 70.6); }
+  // Pre-loads: our red robot holds 4. No-show robots' pre-loads go in their LOADING ZONE against the wall (§10.3.1 note).
+  for (let i = 0; i < 4; i++) { const b = mkBall('pollen', 0, 0, 'held'); game.hopper.push(b.id); }
+  for (let i = 0; i < 4; i++) mkBall('pollen', -70.6, 31.8 + i * 2.85);
+  for (let i = 0; i < 8; i++) mkBall('pollen', i < 4 ? 70.6 : 67.7, -40.2 + (i % 4) * 2.85);
+  sim.trail = [{ x: sim.pose.x, y: sim.pose.y }];
+}
+function cellY(side) { return side === 'N' ? CELL_Y : -CELL_Y; }
 
-{ id: 'l7', day: 2, title: 'Turning with the IMU', mins: 60, html: `
-<p>The Control Hub has a built‑in <b>IMU</b> (gyro). It reports the robot's heading (yaw) in degrees: counter‑clockwise is positive, and it stays between −180 and +180.</p>
-${J(`
-IMU imu = hardwareMap.get(IMU.class, "imu");
-imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
-        RevHubOrientationOnRobot.LogoFacingDirection.UP,        // how the hub is mounted
-        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
-imu.resetYaw();
-double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);`)}
-<p>The two orientation values must describe how your hub is really mounted, or turns will read wrong.</p>
-<h4>A P-controller</h4>
-<p>"Turn at 0.5 until heading ≥ 90" overshoots because the robot is still moving when you cut power. Instead make the power <b>proportional</b> to the error:</p>
-${J(`
-double error = AngleUnit.normalizeDegrees(target - heading);  // shortest way around
-double power = Range.clip(error * kP, -0.5, 0.5);           // big error = fast, small = slow`)}
-<ul><li>kP too high: it wobbles back and forth. Too low: it creeps or stalls.</li>
-<li>A small minimum power overcomes friction near the target.</li>
-<li>Stop when the error has stayed under ~1° for a moment, not the first time it crosses.</li></ul>
-<p>This idea, error times a gain, is the "P" in PID. It's the base of almost every precise mechanism in FTC.</p>`,
-  challenge: { title: 'Quarter turn', text: 'Autonomous: turn left to +90° (IMU yaw) within 2°, without drifting more than 6 in from the start.', start: START, solution: 'L7_ImuTurn.java', endOnly: true,
-    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const e = Math.abs(normDeg(c.yawFromStart - 90)), d = Math.hypot(c.pose.x - this.start.x, c.pose.y - this.start.y);
-      if (e <= 2 && d <= 6) return { pass: true, msg: `Ended ${e.toFixed(2)}° from 90°.` };
-      return { pass: false, msg: `Ended ${e.toFixed(1)}° from 90° and ${d.toFixed(1)} in from the start. Tune kP and the minimum power.` }; } } },
+// ---------- robot mechanisms ----------
+const findMotor = (re) => sim.motors.find(m => re.test(m.name) && !m.slot);
+const findServo = (re, cont) => sim.servos.find(s => re.test(s.name) && s.cont === cont);
+function mechState() {
+  const intake = findMotor(/intake|roller|sweep/i) || findServo(/intake|roller/i, true);
+  const shooter = findMotor(/shoot|fly|launch/i);
+  const feeder = findServo(/feed|transfer|kick|index/i, true) || findMotor(/feed|transfer|kick|index/i);
+  const hood = findServo(/hood|angle|pitch/i, false);
+  const gate = findServo(/gate|stopper/i, false);
+  const motorFrac = (m) => m ? (m.cont !== undefined ? m.power * m.dir : (m.shaftVel * m.dir) / (m.rpm / 60 * m.tpr)) : 0;
+  const shooterRpm = shooter ? Math.abs(shooter.shaftVel) / shooter.tpr * 60 : 0;
+  const hp = hood ? physicalServoPos(hood) : null;
+  return {
+    intake, shooter, feeder, hood, gate,
+    intakeIn: intake ? motorFrac(intake) : 0,
+    feedOn: (feeder ? (feeder.cont !== undefined ? feeder.power * feeder.dir : feeder.power) > 0.3 : false) || (gate ? (physicalServoPos(gate) || 0) > 0.5 : false),
+    shooterRpm, hoodDeg: 30 + (hp == null ? 0.5 : hp) * 45, exitSpeed: shooterRpm / 60 * Math.PI * 3.78 * 0.3
+  };
+}
+function robotLocal(px, py) { const p = sim.pose, c = Math.cos(p.h), s = Math.sin(p.h), dx = px - p.x, dy = py - p.y; return { lx: dx * c + dy * s, ly: dx * s - dy * c }; } // ly + = robot's right
+function robotWorld(lx, ly) { const p = sim.pose, c = Math.cos(p.h), s = Math.sin(p.h); return { x: p.x + lx * c + ly * s, y: p.y + lx * s - ly * c }; }
 
-{ id: 'l8', day: 2, title: 'Sequencing a full autonomous', mins: 60, html: `
-<p>Real autonomous routines are a list of steps built from two or three helper methods you trust. Once <code>driveInches()</code> and <code>turnToHeading()</code> work, an auto reads like a plan:</p>
-${J(`
-driveInches(48, 0.6);  turnToHeading(90);
-driveInches(48, 0.6);  turnToHeading(180);
-driveInches(48, 0.6);  turnToHeading(-90);
-driveInches(48, 0.6);  turnToHeading(0);`)}
-<ul>
-<li>Turn to an <b>absolute</b> heading (relative to the start) rather than "turn 90 more". Small errors don't add up.</li>
-<li>Put tunable numbers in <code>static final</code> constants at the top.</li>
-<li>Show the current step on telemetry so you can see where it got stuck.</li>
-<li>Next level: replace the blocking helpers with a <b>state machine</b> (an <code>enum</code> of steps plus a <code>switch</code> in the loop). That lets the arm and drivetrain move at the same time.</li>
-</ul>`,
-  challenge: { title: 'Drive a square', text: 'Autonomous: drive a 2‑tile square through all four corners and finish within 4 in of where you started.', start: START, marks: [{ x: 0, y: 0 }, { x: -48, y: 0 }, { x: -48, y: -48 }], marksAlt: [{ x: 0, y: 0 }, { x: 48, y: 0 }, { x: 48, y: -48 }], solution: 'L8_SquareAuto.java', endOnly: true,
-    check(c, phase) { if (phase !== 'end' || c.op.annType !== 'Autonomous') return null; const allA = c.visited(this.marks), allB = c.visited(this.marksAlt), d = Math.hypot(c.pose.x - this.start.x, c.pose.y - this.start.y);
-      if ((allA || allB) && d <= 4) return { pass: true, msg: `Square done, ${d.toFixed(1)} in from the start.` };
-      if (!(allA || allB)) return { pass: false, msg: 'The path missed a corner. Each corner is 48 in from the last.' };
-      return { pass: false, msg: `Finished ${d.toFixed(1)} in from the start. Needs to be within 4 in.` }; } } },
+function addFoul(against, kind, rule, why) {
+  const pts = kind === 'major' ? PTS.major : PTS.minor;
+  game.fouls[against === 'red' ? 'blue' : 'red'] += pts;
+  game.foulLog.push(`${rule}: ${why}`);
+  log('warn', `${kind === 'major' ? 'MAJOR' : 'MINOR'} FOUL (${rule}) ${why}. +${pts} to ${against === 'red' ? 'Blue' : 'Red'}.`);
+}
+const warned = new Set();
+function warnOnce(key, msg) { if (warned.has(key)) return; warned.add(key); log('warn', msg); }
+const matchActive = () => game.match.phase === 'auto' || game.match.phase === 'transition' || game.match.phase === 'teleop';
+function matchRemaining() { const m = game.match; if (m.phase === 'teleop') return Math.max(0, (m.phaseEnd - nowMs()) / 1000); if (m.phase === 'auto') return 120 + Math.max(0, (m.phaseEnd - nowMs()) / 1000); if (m.phase === 'transition') return 120; return Infinity; }
 
-// ---------------- DAY 3 ----------------
-{ id: 'l9', day: 3, title: 'Mecanum and field-centric drive', mins: 60, html: `
-<p>Most competitive FTC robots use <b>mecanum</b> wheels: rollers at 45° let the robot strafe sideways. Ask your team which drivetrain the Biobuzz robot uses. Starting this lesson switches the sim to mecanum.</p>
-${J(`
-double y  = -gamepad1.left_stick_y;   // forward
-double x  =  gamepad1.left_stick_x;   // strafe right
-double rx =  gamepad1.right_stick_x;  // turn clockwise
-double d = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-frontLeft.setPower((y + x + rx) / d);
-backLeft.setPower((y - x + rx) / d);
-frontRight.setPower((y - x - rx) / d);
-backRight.setPower((y + x - rx) / d);`)}
-<p>Your current TeleOp sends the same power to front and back on each side, so on mecanum it can't strafe. Each wheel needs its own power.</p>
-<h4>Field-centric</h4>
-<p>Robot‑centric: "up" on the stick means the robot's front. Field‑centric: "up" always means away from the driver, whichever way the robot faces. Rotate the stick vector by the negative IMU heading:</p>
-${J(`
-double h = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-double rotX = x * Math.cos(-h) - y * Math.sin(-h);
-double rotY = x * Math.sin(-h) + y * Math.cos(-h);`)}
-<p>Give drivers a button that calls <code>imu.resetYaw()</code> in case the heading drifts.</p>`,
-  challenge: { title: 'Strafe', text: 'Mecanum TeleOp: slide into the zone 2 tiles to the right while keeping heading within 10° the whole way.', start: START, drive: 'mecanum', zone: { x: 48, y: -48, w: 24, h: 24, label: 'Strafe here' }, solution: 'L9_MecanumTeleOp.java',
-    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, this.zone)) return c.headDev <= 10 ? { pass: true, msg: 'Pure strafe. That is mecanum.' } : { pass: false, msg: 'Reached the zone but turned more than 10°. Strafe with the left stick sideways (A / D).' }; return null; } } },
+function launchBall(ms) {
+  const id = game.hopper.shift(); const b = ballById(id); if (!b) return;
+  const p = sim.pose, front = robotWorld(HALF, 0);
+  const speed = ms.exitSpeed * (1 + (Math.random() - 0.5) * 0.03);
+  game.lastShot = nowMs();
+  if (ms.shooter) ms.shooter.shaftVel *= 0.85;   // the flywheel loses speed on every shot
+  if (speed < 40) { Object.assign(b, { state: 'floor', x: front.x + Math.cos(p.h) * 2, y: front.y + Math.sin(p.h) * 2, z: b.r, vx: Math.cos(p.h) * 25, vy: Math.sin(p.h) * 25, vz: 0 }); return; }
+  const yaw = p.h + (Math.random() - 0.5) * 0.02, pitch = ms.hoodDeg * Math.PI / 180;
+  const rv = robotVel();
+  Object.assign(b, { state: 'air', x: front.x, y: front.y, z: 12, vx: speed * Math.cos(pitch) * Math.cos(yaw) + rv.vx, vy: speed * Math.cos(pitch) * Math.sin(yaw) + rv.vy, vz: speed * Math.sin(pitch), shotAt: nowMs(), deflected: false });
+  game.lastShotInfo = { speed, angle: ms.hoodDeg };
+}
+let lastPose = null, rvel = { vx: 0, vy: 0 };
+function robotVel() { return rvel; }
 
-{ id: 'l10', day: 3, title: 'Mechanisms: arm, claw and button toggles', mins: 60, html: `
-<p>Game pieces get moved by mechanisms: arms, slides, intakes, claws. Two patterns cover most of them.</p>
-<h4>Motor to a position (arm, lift)</h4>
-${J(`
-arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // arm must start at its zero
-arm.setTargetPosition(0);
-arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-arm.setPower(0.7);
-// in the loop: just change the target. It never blocks driving.
-if (gamepad1.dpad_up) arm.setTargetPosition((int) (90 * ARM_TICKS_PER_DEGREE));`)}
-<p>Use <code>ZeroPowerBehavior.BRAKE</code> on arms so they hold position. In this sim the arm motor drives the arm through a 4:1 reduction.</p>
-<h4>Servo (claw, wrist)</h4>
-<p><code>claw.setPosition(0.0 … 1.0)</code> moves a servo to an angle. Find your open and closed numbers on the real robot and store them as constants.</p>
-<h4>Toggles need edge detection</h4>
-<p>The loop runs hundreds of times a second, so <code>if (gamepad1.a) closed = !closed;</code> flips many times per press. Act only when the button <b>becomes</b> pressed:</p>
-${J(`
-if (gamepad1.a && !lastA) clawClosed = !clawClosed;
-lastA = gamepad1.a;`)}`,
-  challenge: { title: 'Arm up, claw shut', text: 'Run a TeleOp that raises the arm to 90° (±5°) with the claw closed (position ≤ 0.2) at the same time. Keys: T = dpad up, K = A.', start: START, solution: 'L10_ArmClawTeleOp.java',
-    check(c) { if (c.op.state !== 'running') return null; if (Math.abs(c.armAngle - 90) <= 5 && c.clawPos != null && c.clawPos <= 0.2) return { pass: true, msg: 'Arm at 90° with the claw closed.' }; return null; } } },
+function tipHive(al) {
+  const h = game.hives[al], oldUp = h.up, newUp = oldUp === 'N' ? 'S' : 'N';
+  h.up = newUp; h.tips++; h.flash = nowMs();
+  if (game.match.phase === 'auto') h.tipsAuto++;
+  // Everything in the CELL that just went down falls out onto the field (released by a TIPPED HIVE, G409)
+  for (const id of h.cells[oldUp]) {
+    const b = ballById(id); if (!b) continue;
+    const ang = Math.random() * Math.PI * 2;
+    Object.assign(b, { state: 'air', x: h.x + (Math.random() - .5) * 14, y: cellY(oldUp) * 1.3, z: 34, vx: Math.cos(ang) * 30, vy: Math.sign(cellY(oldUp)) * (20 + Math.random() * 40), vz: 10, deflected: true });
+  }
+  h.cells[oldUp] = [];
+  log('ok', `${al.toUpperCase()} HIVE TIPPED (+${PTS.tip}). ${al === 'red' ? 'Red human player may enter 1 NECTAR (press N).' : ''}`);
+}
+function cellWeight(h) { return h.cells[h.up].reduce((s, id) => s + weightOf(ballById(id)), 0); }
 
-{ id: 'l11', day: 3, title: 'Iterative OpMode and non-blocking code', mins: 45, html: `
-<p>Besides <code>LinearOpMode</code> there's <code>OpMode</code>, where the SDK calls your methods for you:</p>
-${J(`
-public class MyTeleOp extends OpMode {
-    public void init()      { }   // INIT pressed, once
-    public void init_loop() { }   // repeats until START
-    public void start()     { }   // START pressed, once
-    public void loop()      { }   // repeats until STOP
-    public void stop()      { }   // STOP pressed
-}`)}
-<p>The rule: <code>loop()</code> must return quickly. No <code>sleep()</code> and no <code>while</code> waiting for a motor. The same rule applies inside a LinearOpMode's TeleOp loop: one <code>sleep(500)</code> freezes driving for half a second.</p>
-<h4>Timing without sleeping</h4>
-${J(`
-if (gamepad1.b && !kicking) { kicker.setPosition(1); kickTimer.reset(); kicking = true; }
-if (kicking && kickTimer.seconds() > 0.3) { kicker.setPosition(0); kicking = false; }`)}
-<p>Watch the <b>Loop</b> rate on the driver station bar. Real robots run roughly 50–300 loops per second. Slow loops make a robot feel laggy.</p>`,
-  challenge: { title: 'Loop, don\'t block', text: 'Drive into the zone with an OpMode that extends OpMode (iterative), not LinearOpMode.', start: START, zone: ZONE_AHEAD, solution: 'L11_IterativeTeleOp.java',
-    check(c) { if (c.op.annType !== 'TeleOp') return null; if (inZone(c.pose, ZONE_AHEAD)) return c.op.kind === 'iterative' ? { pass: true, msg: 'Iterative OpMode driving.' } : { pass: false, msg: 'That was a LinearOpMode. Write one that extends OpMode.' }; return null; } } },
+function flowerAdd(f, b) {
+  let hgt = 0; for (const id of f.stack) hgt += ballById(id).r * 2;
+  if (hgt >= FLOWER_TOP) {   // full: bounces off the top
+    Object.assign(b, { state: 'air', x: f.x - Math.sign(f.x) * (Math.abs(f.x) > 60 ? 5 : 0), y: f.y - Math.sign(f.y) * (Math.abs(f.y) > 60 ? 5 : 0), z: FLOWER_TOP + 2, vx: -Math.sign(f.x) * (Math.abs(f.x) > 60 ? 20 : 0), vy: -Math.sign(f.y) * (Math.abs(f.y) > 60 ? 20 : 0), vz: 5, deflected: true });
+    return;
+  }
+  b.state = 'flower'; b.x = f.x; b.y = f.y; f.stack.push(b.id);
+  if (b.kind !== 'pollen' && matchActive() && matchRemaining() > 60) addFoul('red', 'major', 'G410', 'NECTAR entered a FLOWER before the last 60 seconds');
+  log('info', `${b.kind === 'pollen' ? 'POLLEN' : b.kind.toUpperCase() + ' NECTAR'} into the ${f.name}.`);
+}
+function flowerStats(f) {
+  let z = 0; const vol = [];
+  for (const id of f.stack) { const b = ballById(id), d = b.r * 2; if (z + d > FLOWER_VOL_BOTTOM && z < FLOWER_TOP) vol.push(b); z += d; }
+  const nect = vol.filter(b => b.kind !== 'pollen');
+  return { vol, owner: nect.length ? nect[nect.length - 1].kind : null, bottom: nect.length ? nect[0].kind : null };
+}
 
-{ id: 'l12', day: 3, title: 'Competition tools and your checklist', mins: 60, html: `
-<p>Three days gets you to the point where you understand every line of your team's code and can fix the common bugs. Tuning a real robot still takes hours with the hardware. Spend that time on these, roughly in this order:</p>
-<ul>
-<li><b>Odometry</b>: dead-wheel pods or a goBILDA Pinpoint track the robot's x, y and heading during auto, far better than drive-motor encoders.</li>
-<li><b>Path following</b>: Road Runner or Pedro Pathing turn odometry into smooth curved autonomous paths. Most top teams use one of them.</li>
-<li><b>Live tuning</b>: FTC Dashboard (or Panels) graphs values and lets you change constants like kP without redeploying.</li>
-<li><b>Vision</b>: the SDK's <code>VisionPortal</code> with AprilTags for localization and lining up on targets.</li>
-<li><b>Faster loops</b>: <code>LynxModule</code> bulk reads (<code>BulkCachingMode.AUTO</code>) cut sensor read time.</li>
-<li><b>Git</b>: pull before you start, commit small, never edit code at a competition without committing what was on the robot first.</li>
-</ul>
-<h4>Before every match</h4>
-<ol><li>Robot configuration on the Driver Hub matches the names in code.</li>
-<li>Code built and deployed from the commit you meant to run.</li>
-<li>Auto selected, robot placed in the same spot you tuned from.</li>
-<li>Battery above ~13 V. Gamepads assigned (Start+A, Start+B).</li></ol>
-<h4>Keep learning</h4>
-<ul><li>ftc-docs.firstinspires.org: official SDK docs and sample OpModes (also in <code>FtcRobotController/.../external/samples</code> in your repo).</li>
-<li>gm0.org (Game Manual 0): the community guide to building and programming.</li>
-<li>Beta8397's <b>virtual_robot</b> on GitHub runs real FTC Java in IntelliJ on your Mac with a 2D field, for when you want the real compiler.</li></ul>` }
-];
+function stepAir(b, dt) {
+  const pz = b.z;
+  b.vz -= G_ * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+  // HIVE cells
+  for (const al of ['red', 'blue']) {
+    const h = game.hives[al];
+    for (const side of ['N', 'S']) {
+      const cy = cellY(side), inFoot = Math.abs(b.x - h.x) < CELL_HX && Math.abs(b.y - cy) < CELL_HY;
+      if (!inFoot) continue;
+      if (side === h.up) {
+        if (!b.deflected && b.vz < 0 && pz >= CELL_OPEN_Z && b.z < CELL_OPEN_Z && Math.abs(b.x - h.x) < CELL_HX - b.r * .5 && Math.abs(b.y - cy) < CELL_HY - b.r * .5) {
+          b.state = 'cell'; b.x = h.x + (Math.random() - .5) * 12; b.y = cy + (Math.random() - .5) * 6; h.cells[side].push(b.id);
+          log('info', `Scored in the ${al} HIVE (weight ${cellWeight(h)}/${game.tipWeight}).`);
+          if (al === 'blue') warnOnce('blueHive', 'That went into the BLUE HIVE. It counts for Blue, not you.');
+          if (cellWeight(h) >= game.tipWeight) tipHive(al);
+          return;
+        }
+        if (b.z > CELL_BODY_Z && b.z < CELL_OPEN_Z && !b.deflected) { b.deflected = true; b.vx *= -0.25; b.vy *= -0.25; b.vz = Math.min(b.vz, 0); warnOnce('g417' + b.id, 'Shot hit the side or bottom of a CELL (deliberately doing that breaks G417).'); }
+      } else if (b.z > 20 && b.z < 50 && !b.deflected) { b.deflected = true; b.vx *= -0.25; b.vy *= -0.25; b.vz = Math.min(b.vz, 0); }
+    }
+  }
+  // FLOWERS
+  for (const f of game.flowers) {
+    const d = Math.hypot(b.x - f.x, b.y - f.y);
+    if (b.vz < 0 && pz >= FLOWER_TOP && b.z < FLOWER_TOP && d < (b.kind === 'pollen' ? 1.4 : 0.9)) { flowerAdd(f, b); return; }
+    if (d < FLOWER_R + b.r && b.z < FLOWER_TOP && !b.deflected) { b.deflected = true; b.vx *= -0.3; b.vy *= -0.3; }
+  }
+  // perimeter (walls ~12 in tall)
+  if (Math.abs(b.x) > FH - b.r || Math.abs(b.y) > FH - b.r) {
+    if (b.z < 12) { if (Math.abs(b.x) > FH - b.r) { b.x = Math.sign(b.x) * (FH - b.r); b.vx *= -0.45; } if (Math.abs(b.y) > FH - b.r) { b.y = Math.sign(b.y) * (FH - b.r); b.vy *= -0.45; } }
+    else if (Math.abs(b.x) > FH + 4 || Math.abs(b.y) > FH + 4) { b.state = 'out'; b.outAt = nowMs(); log('warn', 'A ball left the FIELD. FIELD STAFF will put it back (G405 if done deliberately).'); return; }
+  }
+  if (b.z <= b.r) { b.z = b.r; b.state = 'floor'; b.vz = 0; b.vx *= 0.35; b.vy *= 0.35; b.deflected = false; }
+}
+function pushOutCircle(b, cx, cy, rr) {
+  const dx = b.x - cx, dy = b.y - cy, d = Math.hypot(dx, dy) || 0.01, min = rr + b.r;
+  if (d < min) { b.x = cx + dx / d * min; b.y = cy + dy / d * min; const vn = (b.vx * dx + b.vy * dy) / d; if (vn < 0) { b.vx -= 1.5 * vn * dx / d; b.vy -= 1.5 * vn * dy / d; } }
+}
+function stepFloor(b, dt, ms) {
+  const f = Math.exp(-2.2 * dt); b.vx *= f; b.vy *= f;
+  b.x += b.vx * dt; b.y += b.vy * dt;
+  if (Math.abs(b.x) > FH - b.r) { b.x = Math.sign(b.x) * (FH - b.r); b.vx *= -0.4; }
+  if (Math.abs(b.y) > FH - b.r) { b.y = Math.sign(b.y) * (FH - b.r); b.vy *= -0.4; }
+  for (const fl of game.flowers) pushOutCircle(b, fl.x, fl.y, FLOWER_R);
+  for (const [lx, ly] of FRAME_LEGS) pushOutCircle(b, lx, ly, 1.2);
+  // robot: intake at the front, otherwise the chassis bulldozes
+  const L = robotLocal(b.x, b.y);
+  if (ms.intakeIn > 0.3 && L.lx > HALF - 1 && L.lx < HALF + b.r + 1.2 && Math.abs(L.ly) < 7.5 && game.hopper.length < game.capacity) {
+    b.state = 'held'; game.hopper.push(b.id);
+    if (b.kind === 'blue') { b.oppSince = nowMs(); }
+    return;
+  }
+  const ex = HALF + b.r;
+  if (Math.abs(L.lx) < ex && Math.abs(L.ly) < ex) {
+    const penX = ex - Math.abs(L.lx), penY = ex - Math.abs(L.ly);
+    let nlx = L.lx, nly = L.ly;
+    if (penX < penY) nlx = Math.sign(L.lx || 1) * ex; else nly = Math.sign(L.ly || 1) * ex;
+    const w = robotWorld(nlx, nly); b.x = w.x; b.y = w.y;
+    b.vx = rvel.vx * 1.1; b.vy = rvel.vy * 1.1;
+  }
+}
+function collideBalls() {
+  const fl = game.balls.filter(b => b.state === 'floor');
+  for (let i = 0; i < fl.length; i++) for (let j = i + 1; j < fl.length; j++) {
+    const a = fl[i], c = fl[j], dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy), min = a.r + c.r;
+    if (d > 0 && d < min) {
+      const nx = dx / d, ny = dy / d, push = (min - d) / 2;
+      a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
+      const rel = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny;
+      if (rel < 0) { a.vx += rel * nx * 0.9; a.vy += rel * ny * 0.9; c.vx -= rel * nx * 0.9; c.vy -= rel * ny * 0.9; }
+    }
+  }
+}
+function robotObstacles() {
+  const obs = game.flowers.map(f => [f.x, f.y, FLOWER_R]).concat(FRAME_LEGS.map(([x, y]) => [x, y, 1.2]));
+  for (const [cx, cy, rr] of obs) {
+    const L = robotLocal(cx, cy), qx = clip(L.lx, -HALF, HALF), qy = clip(L.ly, -HALF, HALF);
+    const dx = L.lx - qx, dy = L.ly - qy, d = Math.hypot(dx, dy);
+    if (d < rr) {
+      let nlx, nly, pen;
+      if (d > 1e-6) { nlx = dx / d; nly = dy / d; pen = rr - d; }
+      else { const px = HALF - Math.abs(L.lx), py = HALF - Math.abs(L.ly); if (px < py) { nlx = Math.sign(L.lx); nly = 0; pen = px + rr; } else { nlx = 0; nly = Math.sign(L.ly); pen = py + rr; } }
+      const w0 = robotWorld(0, 0), w1 = robotWorld(nlx * pen, nly * pen);
+      sim.pose.x -= (w1.x - w0.x); sim.pose.y -= (w1.y - w0.y);
+    }
+  }
+}
+function gameStep(dt) {
+  if (!game.hives) return;
+  // robot velocity (for bulldozing and shooting on the move)
+  if (lastPose && dt > 0) { rvel = { vx: (sim.pose.x - lastPose.x) / dt, vy: (sim.pose.y - lastPose.y) / dt }; }
+  robotObstacles();
+  lastPose = { x: sim.pose.x, y: sim.pose.y };
+  const ms = mechState(), t = nowMs();
+  // feed into the shooter
+  if (ms.feedOn && game.hopper.length && t - game.lastShot > 280) launchBall(ms);
+  // spit out the front
+  if (ms.intakeIn < -0.3 && game.hopper.length && t - game.lastEject > 200) {
+    const b = ballById(game.hopper.pop()), w = robotWorld(HALF + b.r + 0.5, 0);
+    Object.assign(b, { state: 'floor', x: w.x, y: w.y, z: b.r, vx: Math.cos(sim.pose.h) * 35 + rvel.vx, vy: Math.sin(sim.pose.h) * 35 + rvel.vy });
+    game.lastEject = t;
+  }
+  // pull POLLEN out of the bottom of a FLOWER (only POLLEN, only from the bottom: G418)
+  if (ms.intakeIn > 0.3 && game.hopper.length < game.capacity && t - game.lastRetrieve > 350) {
+    const fp = robotWorld(HALF, 0);
+    for (const f of game.flowers) {
+      if (Math.hypot(fp.x - f.x, fp.y - f.y) < FLOWER_R + 2.5 && f.stack.length) {
+        const b = ballById(f.stack[0]);
+        if (b.kind === 'pollen') { f.stack.shift(); b.state = 'held'; game.hopper.push(b.id); game.lastRetrieve = t; }
+        break;
+      }
+    }
+  }
+  // opposing NECTAR held too long (G408)
+  for (const id of game.hopper) { const b = ballById(id); if (b.kind === 'blue' && b.oppSince && t - b.oppSince > 1000) { warnOnce('g408' + id, 'VERBAL WARNING (G408): your robot is CONTROLLING blue NECTAR. Spit it out (left trigger).'); } }
+  for (const b of game.balls) {
+    if (b.state === 'air') stepAir(b, dt);
+    else if (b.state === 'floor') stepFloor(b, dt, ms);
+    else if (b.state === 'out' && t - b.outAt > 3000) { const ang = Math.random() * Math.PI * 2; Object.assign(b, { state: 'floor', x: Math.cos(ang) * 50, y: Math.sin(ang) * 50, z: b.r, vx: 0, vy: 0 }); }
+  }
+  collideBalls();
+  matchTick();
+}
+
+// ---------- human player (G426, G427) ----------
+function humanNectar() {
+  if (!game.hives) return;
+  if (game.stock.red <= 0) { log('info', 'No red NECTAR left in the ALLIANCE AREA.'); return; }
+  const allowed = !matchActive() || game.entered.red < game.hives.red.tips || matchRemaining() <= 60;
+  if (game.match.phase === 'auto') { addFoul('red', 'minor', 'G401/G426', 'human entered NECTAR during AUTO'); }
+  else if (!allowed) addFoul('red', 'minor', 'G426', 'NECTAR entered before a HIVE TIP earned it (or before 60 s left)');
+  game.stock.red--; game.entered.red++;
+  const z = LOADING.red; mkBall('red', (z.x0 + z.x1) / 2 + (Math.random() - .5) * 4, (z.y0 + z.y1) / 2 + (Math.random() - .5) * 12);
+  log('info', `Human player entered red NECTAR in the LOADING ZONE (${game.stock.red} left).`);
+}
+
+// ---------- scoring (Table 10-2) ----------
+function touchingWall() { const p = sim.pose, e = HALF * (Math.abs(Math.cos(p.h)) + Math.abs(Math.sin(p.h))); return FH - Math.abs(p.x) - e < 0.6 || FH - Math.abs(p.y) - e < 0.6; }
+function robotInRect(r) {
+  const pts = [[0, 0], [HALF, HALF], [HALF, -HALF], [-HALF, HALF], [-HALF, -HALF], [HALF, 0], [-HALF, 0], [0, HALF], [0, -HALF]].map(([a, c]) => robotWorld(a, c));
+  if (pts.some(q => q.x >= r.x0 && q.x <= r.x1 && q.y >= r.y0 && q.y <= r.y1)) return true;
+  return [[r.x0, r.y0], [r.x0, r.y1], [r.x1, r.y0], [r.x1, r.y1]].some(([x, y]) => { const L = robotLocal(x, y); return Math.abs(L.lx) <= HALF && Math.abs(L.ly) <= HALF; });
+}
+function ballInRect(b, r) { return b.x + b.r > r.x0 && b.x - b.r < r.x1 && b.y + b.r > r.y0 && b.y - b.r < r.y1; }
+function computeScore() {
+  const S = {};
+  for (const al of ['red', 'blue']) {
+    const h = game.hives[al];
+    const s = { leave: 0, autoPark: 0, park: 0, tipsAuto: h.tipsAuto * PTS.tip, tipsTele: (h.tips - h.tipsAuto) * PTS.tip, cell: h.cells[h.up].length * PTS.cell, flower: 0, bottom: 0, garden: 0, penalties: game.fouls[al] };
+    for (const f of game.flowers) { const st = flowerStats(f); if (st.owner === al) s.flower += st.vol.length * PTS.flower; if (st.bottom === al) s.bottom += PTS.bottom; }
+    s.garden = game.balls.filter(b => b.state === 'floor' && ballInRect(b, GARDEN[al])).length * PTS.garden;
+    S[al] = s;
+  }
+  const m = game.match;
+  const leaveNow = !touchingWall(), parkNow = robotInRect(LOADING.red);
+  S.red.leave = (m.autoLeave != null ? m.autoLeave : (m.phase === 'auto' || m.phase === 'free') && leaveNow) ? PTS.leave : 0;
+  S.red.autoPark = (m.autoPark != null ? m.autoPark : (m.phase === 'auto' || m.phase === 'free') && parkNow) ? PTS.park : 0;
+  S.red.park = (m.phase === 'teleop' || m.phase === 'over' || m.phase === 'free') && parkNow ? PTS.park : 0;
+  for (const al of ['red', 'blue']) { const s = S[al]; s.total = s.leave + s.autoPark + s.park + s.tipsAuto + s.tipsTele + s.cell + s.flower + s.bottom + s.garden + s.penalties; }
+  return S;
+}
+
+// ---------- match flow (§10.1, §10.4: 30 s AUTO, 8 s transition, 2:00 TELEOP) ----------
+async function startMatch() {
+  if (run.state !== 'idle') { requestStop('button'); await wait(400); }
+  const auto = $('autoSelect').value, tele = $('teleSelect').value;
+  game.match = { phase: 'auto', start: nowMs(), phaseEnd: nowMs() + 30000, autoLeave: null, autoPark: null, autoOp: auto, teleOp: tele, teleStarted: false };
+  warned.clear();
+  placeRobot(START_POSES[$('startSelect').value] || START_POSES.wall); resetField();
+  log('ok', 'MATCH START: AUTO (30 s)');
+  if (auto) { $('opSelect').value = auto; await doInit(); if (run.state === 'init') doStart(); }
+}
+function matchTick() {
+  const m = game.match, t = nowMs();
+  if (m.phase === 'auto' && t >= m.phaseEnd) {
+    if (run.state !== 'idle') requestStop('timer');
+    m.autoLeave = !touchingWall(); m.autoPark = robotInRect(LOADING.red);
+    m.phase = 'transition'; m.phaseEnd = t + 8000;
+    log('ok', `AUTO over. LEAVE ${m.autoLeave ? 'yes' : 'no'}, PARK ${m.autoPark ? 'yes' : 'no'}. 8 s transition.`);
+  } else if (m.phase === 'transition') {
+    if (sim.speed > 2) warnOnce('g403', 'G403: robots must be motionless during the AUTO→TELEOP transition.');
+    if (!m.teleStarted && t >= m.phaseEnd - 3000 && m.teleOp && run.state === 'idle') { m.teleStarted = true; $('opSelect').value = m.teleOp; doInit(); }
+    if (t >= m.phaseEnd) { m.phase = 'teleop'; m.phaseEnd = t + 120000; log('ok', 'TELEOP (2:00). Drive!'); if (run.state === 'init') doStart(); }
+  } else if (m.phase === 'teleop') {
+    if (!m.said60 && m.phaseEnd - t <= 60000) { m.said60 = true; log('ok', '60 seconds left: NECTAR can go into FLOWERS, and all remaining NECTAR can be entered.'); }
+    if (t >= m.phaseEnd) { if (run.state !== 'idle') requestStop('timer'); m.phase = 'over'; const S = computeScore(); log('ok', `MATCH OVER. Red ${S.red.total} – Blue ${S.blue.total}.`); }
+  }
+}
+
+// ---------- drawing ----------
+const VIEW = 80;   // canvas shows ±80 in: the 144 in field plus the ALLIANCE AREAS at the side walls
+function drawGame(g, k, X, Y, size) {
+  g.fillStyle = C.panel; g.fillRect(0, 0, size, size);
+  // ALLIANCE AREAS (outside the field, ~97 in wide)
+  g.globalAlpha = 0.22; g.fillStyle = C.red; g.fillRect(X(-VIEW), Y(48.5), 8 * k, 97 * k); g.fillStyle = C.blue; g.fillRect(X(FH), Y(48.5), 8 * k, 97 * k); g.globalAlpha = 1;
+  g.fillStyle = C.ink; g.font = `600 ${Math.max(8, k * 2.4)}px Barlow, sans-serif`; g.textAlign = 'center';
+  g.save(); g.translate(X(-76), Y(0)); g.rotate(-Math.PI / 2); g.fillText(`RED ALLIANCE · ${game.stock.red} NECTAR`, 0, 0); g.restore();
+  g.save(); g.translate(X(76), Y(0)); g.rotate(Math.PI / 2); g.fillText(`BLUE ALLIANCE · ${game.stock.blue} NECTAR`, 0, 0); g.restore();
+  g.fillText('AUDIENCE', X(0), Y(-77)); g.textAlign = 'left';
+  // tiles
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { g.fillStyle = (i + j) % 2 ? C.tile2 : C.tile; g.fillRect(X(-FH + i * 24), Y(FH - j * 24), 24 * k + 1, 24 * k + 1); }
+  g.strokeStyle = C.seam; g.lineWidth = Math.max(1, k * 0.25);
+  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(X(-FH + i * 24), Y(FH)); g.lineTo(X(-FH + i * 24), Y(-FH)); g.stroke(); g.beginPath(); g.moveTo(X(-FH), Y(-FH + i * 24)); g.lineTo(X(FH), Y(-FH + i * 24)); g.stroke(); }
+  g.fillStyle = C.muted; g.font = `${Math.max(8, k * 2.2)}px "JetBrains Mono", monospace`; g.textBaseline = 'top';
+  'ABCDEF'.split('').forEach((c, i) => g.fillText(c, X(-FH + i * 24 + 11), Y(-FH) - k * 3.2));
+  for (let r = 1; r <= 6; r++) g.fillText(String(r), X(-FH) + 2, Y(-FH + r * 24) + 2);
+  // LOADING ZONES and GARDENS
+  for (const al of ['red', 'blue']) {
+    const col = al === 'red' ? C.red : C.blue, z = LOADING[al], gd = GARDEN[al];
+    g.strokeStyle = col; g.lineWidth = Math.max(1.5, k * 0.6); g.strokeRect(X(z.x0), Y(z.y1), (z.x1 - z.x0) * k, (z.y1 - z.y0) * k);
+    g.fillStyle = col; g.globalAlpha = 0.15; g.fillRect(X(z.x0), Y(z.y1), (z.x1 - z.x0) * k, (z.y1 - z.y0) * k); g.globalAlpha = 0.85; g.fillRect(X(gd.x0), Y(gd.y1), (gd.x1 - gd.x0) * k, (gd.y1 - gd.y0) * k); g.globalAlpha = 1;
+  }
+  // trail
+  if (sim.trail.length > 1) { g.strokeStyle = C.trail; g.lineWidth = Math.max(1, k * 0.35); g.beginPath(); sim.trail.forEach((p, i) => i ? g.lineTo(X(p.x), Y(p.y)) : g.moveTo(X(p.x), Y(p.y))); g.stroke(); }
+  // floor balls
+  for (const b of game.balls) if (b.state === 'floor') drawBall(g, b, X(b.x), Y(b.y), b.r * k);
+  // HIVE frame legs + base
+  g.strokeStyle = C.wall; g.lineWidth = Math.max(1, k * 0.5); g.setLineDash([k * 1.5, k]);
+  g.strokeRect(X(-19.5), Y(24.7), 39 * k, 49.4 * k); g.setLineDash([]);
+  g.fillStyle = C.wall; for (const [lx, ly] of FRAME_LEGS) { g.beginPath(); g.arc(X(lx), Y(ly), 1.2 * k, 0, 7); g.fill(); }
+  // FLOWERS
+  for (const f of game.flowers) {
+    g.fillStyle = '#c9a227'; g.beginPath(); g.arc(X(f.x), Y(f.y), FLOWER_R * k, 0, 7); g.fill();
+    g.fillStyle = '#3a8f3a'; g.beginPath(); g.arc(X(f.x), Y(f.y), 2 * k, 0, 7); g.fill();
+    const st = flowerStats(f), top = f.stack.length ? ballById(f.stack[f.stack.length - 1]) : null;
+    if (top) drawBall(g, top, X(f.x), Y(f.y), top.r * k * 0.9);
+    g.fillStyle = st.owner === 'red' ? C.red : st.owner === 'blue' ? C.blue : C.ink;
+    g.font = `700 ${Math.max(9, k * 2.6)}px Barlow, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'center';
+    const ox = Math.abs(f.x) > 60 ? -Math.sign(f.x) * 7 : 0, oy = Math.abs(f.y) > 60 ? -Math.sign(f.y) * 6 : 0;
+    g.fillText(`${f.stack.length}${st.owner ? ' ★' : ''}`, X(f.x + ox), Y(f.y + oy)); g.textAlign = 'left'; g.textBaseline = 'top';
+  }
+  // robot (drawn by caller), then HIVES above it (they're 30+ in up)
+}
+function drawHivesAndAir(g, k, X, Y) {
+  for (const al of ['red', 'blue']) {
+    const h = game.hives[al], col = al === 'red' ? C.red : C.blue;
+    const flash = nowMs() - h.flash < 900;
+    for (const side of ['N', 'S']) {
+      const up = side === h.up, cy = cellY(side);
+      g.globalAlpha = up ? 0.82 : 0.35; g.fillStyle = C.panel; g.fillRect(X(h.x - CELL_HX), Y(cy + CELL_HY), CELL_HX * 2 * k, CELL_HY * 2 * k); g.globalAlpha = 1;
+      g.strokeStyle = col; g.lineWidth = Math.max(1.5, k * (up ? 0.8 : 0.4)); if (!up) g.setLineDash([k, k]);
+      if (up && flash) { g.lineWidth = k * 1.6; }
+      g.strokeRect(X(h.x - CELL_HX), Y(cy + CELL_HY), CELL_HX * 2 * k, CELL_HY * 2 * k); g.setLineDash([]);
+      if (up) {
+        const ids = h.cells[side]; ids.forEach((id, i) => { const b = ballById(id); drawBall(g, b, X(h.x - 7.5 + (i % 6) * 3), Y(cy - 0.5 - Math.floor(i / 6) * 3.4), b.r * k * 0.75); });
+        g.fillStyle = col; g.font = `700 ${Math.max(8, k * 2.2)}px Barlow, sans-serif`; g.textBaseline = 'top';
+        g.fillText(`UP · ${cellWeight(h)}/${game.tipWeight}`, X(h.x - CELL_HX) + 3, Y(cy + CELL_HY) + 3);
+      }
+    }
+    g.fillStyle = col; g.font = `700 ${Math.max(8, k * 2.4)}px Barlow, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const full = `${al.toUpperCase()} HIVE · ${h.tips} TIP${h.tips === 1 ? '' : 'S'}`, short = `${h.tips} TIP${h.tips === 1 ? '' : 'S'}`;
+    g.fillText(g.measureText(full).width < 24 * k ? full : short, X(h.x), Y(0)); g.textAlign = 'left'; g.textBaseline = 'top';
+  }
+  // balls in the air: shadow + size grows with height
+  for (const b of game.balls) if (b.state === 'air') {
+    g.fillStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.arc(X(b.x), Y(b.y), b.r * k, 0, 7); g.fill();
+    drawBall(g, b, X(b.x), Y(b.y + b.z * 0.18), b.r * k * (1 + b.z / 70));
+  }
+}
+function drawBall(g, b, x, y, r) {
+  g.fillStyle = b.kind === 'pollen' ? '#e8c21a' : b.kind === 'red' ? '#e03131' : '#1c6fe0';
+  g.beginPath(); g.arc(x, y, Math.max(1.5, r), 0, 7); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1; g.stroke();
+}
+function drawRobotExtras(g, ms) {   // in robot-local inch space (already transformed)
+  // intake roller
+  g.fillStyle = ms.intakeIn > 0.3 ? C.fwd : ms.intakeIn < -0.3 ? C.rev : C.wheel; g.fillRect(HALF - 0.2, -7.5, 1.4, 15);
+  // hopper
+  game.hopper.forEach((id, i) => { const b = ballById(id); drawBall(g, b, -4 + i * 0, -5.2 + i * 3.5, b.r * 0.8); });
+  // flywheel gauge
+  if (ms.shooter) { const f = clip(ms.shooterRpm / 6000, 0, 1); g.strokeStyle = C.accent; g.lineWidth = 0.8; g.beginPath(); g.arc(2.5, 0, 3, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); g.stroke(); }
+}
+function drawShotPreview(g, k, X, Y, ms) {
+  if (!game.preview || !ms.shooter || ms.exitSpeed < 40) return;
+  const p = sim.pose, front = robotWorld(HALF, 0), pitch = ms.hoodDeg * Math.PI / 180;
+  let x = front.x, y = front.y, z = 12, vx = ms.exitSpeed * Math.cos(pitch) * Math.cos(p.h) + rvel.vx, vy = ms.exitSpeed * Math.cos(pitch) * Math.sin(p.h) + rvel.vy, vz = ms.exitSpeed * Math.sin(pitch);
+  g.fillStyle = C.ink; let crossed = null;
+  for (let i = 0; i < 300; i++) {
+    const dt = 0.008, pz = z; vz -= G_ * dt; x += vx * dt; y += vy * dt; z += vz * dt;
+    if (i % 4 === 0) { g.globalAlpha = 0.5; g.beginPath(); g.arc(X(x), Y(y), Math.max(1, k * 0.35), 0, 7); g.fill(); g.globalAlpha = 1; }
+    if (!crossed && vz < 0 && pz >= CELL_OPEN_Z && z < CELL_OPEN_Z) crossed = { x, y };
+    if (z <= 1.4 || Math.abs(x) > FH || Math.abs(y) > FH) break;
+  }
+  if (crossed) { g.strokeStyle = C.accent; g.lineWidth = 2; g.beginPath(); g.arc(X(crossed.x), Y(crossed.y), 2.2 * k, 0, 7); g.stroke(); }
+}
+
+// ---------- HUD ----------
+function renderScore() {
+  if (!game.hives) return;
+  const S = computeScore(), m = game.match;
+  $('scoreRed').textContent = S.red.total; $('scoreBlue').textContent = S.blue.total;
+  let phase = 'FREE PLAY', time = '';
+  const t = nowMs(), mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  if (m.phase === 'auto') { phase = 'AUTO'; time = mmss(Math.max(0, (m.phaseEnd - t) / 1000)); }
+  else if (m.phase === 'transition') { phase = 'TRANSITION'; time = String(Math.ceil(Math.max(0, (m.phaseEnd - t) / 1000))); }
+  else if (m.phase === 'teleop') { phase = 'TELEOP'; time = mmss(Math.max(0, (m.phaseEnd - t) / 1000)); }
+  else if (m.phase === 'over') phase = 'FINAL';
+  $('phaseLabel').textContent = phase; $('phaseTime').textContent = time;
+  const r = S.red, rows = [['LEAVE (auto)', r.leave], ['PARK (auto)', r.autoPark], ['HIVE TIPS', r.tipsAuto + r.tipsTele], ['In up CELL', r.cell], ['FLOWERS owned', r.flower], ['Bottom NECTAR', r.bottom], ['GARDEN', r.garden], ['PARK (end)', r.park], ['Fouls by Blue', r.penalties]];
+  $('scoreRows').innerHTML = rows.map(([a, v]) => `<span>${a} <b>${v}</b></span>`).join('');
+  const tips = game.hives.red.tips;
+  $('rpLine').innerHTML = `<span class="chip ${tips >= 4 ? 'on' : ''}">POLLINATOR 1 · ${tips}/4 tips</span><span class="chip ${tips >= 7 ? 'on' : ''}">POLLINATOR 2 · ${tips}/7 tips</span><span class="chip ${r.leave + r.autoPark + r.park >= 16 ? 'on' : ''}" title="Needs your alliance partner too">SWARM · ${r.leave + r.autoPark + r.park}/16 pts</span>`;
+  const ms = mechState();
+  $('mechText').textContent = `Hopper ${game.hopper.length}/${game.capacity} · Intake ${ms.intake ? (ms.intakeIn > 0.3 ? 'IN' : ms.intakeIn < -0.3 ? 'OUT' : 'off') : 'none'} · Flywheel ${ms.shooter ? Math.round(ms.shooterRpm) + ' rpm' : 'none'} · Hood ${ms.hood ? ms.hoodDeg.toFixed(0) + '°' : 'none'}${game.lastShotInfo ? ` · last shot ${game.lastShotInfo.speed.toFixed(0)} in/s @ ${game.lastShotInfo.angle.toFixed(0)}°` : ''}`;
+}
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // ================= "Explain my code": line-by-line explanations + code review =================
 // Each rule: [regex, title, explanation]. Several rules can match one line.
 const C_ = (s) => `<code>${esc(s)}</code>`;
@@ -2187,6 +2624,10 @@ const EXPLAIN_RULES = [
   [/public\s+(\w+)\s*\(\s*HardwareMap\s+\w+\s*\)/, 'Constructor', `A <b>constructor</b>: it has the class's name and no return type. It runs once when an OpMode writes ${C_('new DriveTrain(hardwareMap)')}. The OpMode passes in its ${C_('hardwareMap')} so this class can look up the motors.`],
   [/^\s*(public|private|protected)\s+(static\s+)?void\s+(\w+)\s*\(([^)]*)\)/, 'Method', `A <b>method</b>: a named block of code you can run by writing its name. ${C_('void')} means it doesn't hand back a value. The things in the parentheses are <b>parameters</b>: values the caller passes in.`],
   [/^\s*(public|private|protected)\s+(static\s+)?(double|int|boolean)\s+(\w+)\s*\(/, 'Method that returns a value', `This method computes something and hands it back with ${C_('return')}. The word before the name (${C_('double')}, ${C_('int')}, ${C_('boolean')}) is the type of value it returns.`],
+  [/\.setVelocity\(/, 'Set a speed (DcMotorEx)', `Asks the motor to hold an exact speed in encoder <b>ticks per second</b> (needs RUN_USING_ENCODER). Flywheel shooters use this so every shot leaves at the same speed even as the battery drops. A 6000 RPM goBILDA motor with 28 ticks/rev tops out at 2800 ticks/s.`],
+  [/\.getVelocity\(\)/, 'Read the speed', `How fast the motor is actually turning, in ticks per second. Compare it with your target to know when a flywheel is ready to shoot.`],
+  [/CRServo/, 'Continuous servo', `A CRServo spins continuously like a small motor: ${C_('setPower(1)')} full one way, ${C_('-1')} the other, 0 stop. Good for feeders and rollers.`],
+  [/NormalizedColorSensor|getNormalizedColors/, 'Color sensor', `Reads red, green, blue and alpha (brightness) as 0–1 values. In BIOBUZZ it can tell POLLEN (yellow) from red and blue NECTAR so you can spit out the other alliance's NECTAR (G408).`],
   [/hardwareMap\.get\(\s*DcMotor(Ex)?\.class\s*,\s*"([^"]+)"\s*\)/, 'Look up a motor', `Asks the robot configuration on the Control Hub for the motor named in quotes. The name must match the configuration <b>exactly</b>, including capitals, or the OpMode crashes at INIT with "Unable to find a hardware device".`],
   [/hardwareMap\.get\(\s*Servo\.class/, 'Look up a servo', `Gets the servo with this configured name.`],
   [/hardwareMap\.get\(\s*IMU\.class/, 'Look up the IMU', `Gets the gyro. On a Control Hub it's usually configured with the name "imu".`],
@@ -2368,7 +2809,8 @@ $('btnExplainThis').addEventListener('click', () => { explainFile = activeFile; 
 // ================= Workspace, UI, runner, rendering =================
 let files = store.get('bbsim.files', null);
 if (!files || typeof files !== 'object' || !Object.keys(files).length) files = Object.assign({}, REPO_FILES);
-let activeFile = store.get('bbsim.active', 'MyFIRSTOpModeClass.java');
+if (!store.get('bbsim.examples.v1', false)) { for (const [f, src] of Object.entries(EXAMPLES)) if (!files[f]) files[f] = src; store.set('bbsim.examples.v1', true); store.set('bbsim.files', files); }
+let activeFile = store.get('bbsim.active', 'BiobuzzTeleOp.java');
 if (!files[activeFile]) activeFile = Object.keys(files)[0];
 let progress = store.get('bbsim.progress', {});
 let activeChallenge = null, challengeResult = null;
@@ -2399,9 +2841,9 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 document.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) showPane(g.dataset.goto); });
 function showPane(name) {
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.pane === name)));
-  ['learn', 'explain', 'code', 'robot'].forEach(p => { $('pane-' + p).hidden = p !== name; });
+  ['code', 'explain', 'robot', 'game'].forEach(p => { $('pane-' + p).hidden = p !== name; });
   if (name === 'explain') renderExplain();
-  store.set('bbsim.pane', name);
+  store.set('bbsim.pane2', name);
 }
 
 // ---------- editor ----------
@@ -2412,12 +2854,12 @@ function renderFiles() {
     const b = document.createElement('button');
     b.className = 'file'; b.textContent = f.replace(/\.java$/, '');
     if (REPO_FILES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === REPO_FILES[f] ? 'repo' : 'repo · edited'; b.appendChild(tg); }
-    else if (SOLUTIONS[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = 'solution'; b.appendChild(tg); }
+    else if (EXAMPLES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === EXAMPLES[f] ? 'example' : 'example · edited'; b.appendChild(tg); }
     b.setAttribute('aria-current', String(f === activeFile));
     b.addEventListener('click', () => openFile(f));
     bar.appendChild(b);
   }
-  $('btnRevert').disabled = !(REPO_FILES[activeFile] || SOLUTIONS[activeFile]) || files[activeFile] === (REPO_FILES[activeFile] || SOLUTIONS[activeFile]);
+  $('btnRevert').disabled = !(REPO_FILES[activeFile] || EXAMPLES[activeFile]) || files[activeFile] === (REPO_FILES[activeFile] || EXAMPLES[activeFile]);
   $('btnDelete').disabled = !!REPO_FILES[activeFile];
   $('btnDelete').textContent = 'Delete file';
 }
@@ -2441,7 +2883,7 @@ editor.addEventListener('keydown', (e) => {
   }
 });
 $('btnRevert').addEventListener('click', () => {
-  const orig = REPO_FILES[activeFile] || SOLUTIONS[activeFile]; if (!orig) return;
+  const orig = REPO_FILES[activeFile] || EXAMPLES[activeFile]; if (!orig) return;
   files[activeFile] = orig; editor.value = orig; saveFiles(); renderFiles(); log('info', `Reverted ${activeFile}`);
 });
 let delArm = 0;
@@ -2486,6 +2928,12 @@ function refreshOpModes(keep) {
   }
   if (!list.length) { const op = document.createElement('option'); op.textContent = 'No OpModes compiled'; op.value = ''; sel.appendChild(op); }
   if (list.some(o => o.cls === prev)) sel.value = prev;
+  for (const [id, type] of [['autoSelect', 'Autonomous'], ['teleSelect', 'TeleOp']]) {
+    const el = $(id), keep = el.value || store.get('bbsim.' + id, type === 'Autonomous' ? 'BiobuzzAuto' : 'BiobuzzTeleOp');
+    el.textContent = ''; const none = document.createElement('option'); none.value = ''; none.textContent = '(none)'; el.appendChild(none);
+    for (const o of list.filter(x => x.type === type)) { const op = document.createElement('option'); op.value = o.cls; op.textContent = o.label; el.appendChild(op); }
+    if (list.some(o => o.cls === keep)) el.value = keep;
+  }
 }
 $('opSelect').addEventListener('change', () => store.set('bbsim.op', $('opSelect').value));
 
@@ -2545,7 +2993,7 @@ async function runIterative(self, token) {
 function doStart() {
   if (run.state !== 'init' || run.stopRequested) return;
   run.state = 'running'; run.startAt = nowMs();
-  run.matchEnd = nowMs() + (run.annType === 'Autonomous' ? 30000 : 120000);
+  run.matchEnd = game.match.phase === 'free' && run.annType === 'Autonomous' ? nowMs() + 30000 : 0;
   log('ok', 'START');
   setStateUI();
   $('field').focus({ preventScroll: true });
@@ -2584,7 +3032,7 @@ $('btnInit').addEventListener('click', doInit);
 $('btnStart').addEventListener('click', doStart);
 $('btnStop').addEventListener('click', () => requestStop('button'));
 $('btnClearLog').addEventListener('click', () => { logEl.textContent = ''; });
-$('btnReset').addEventListener('click', () => { placeRobot(activeChallenge ? activeChallenge.start : START); });
+$('btnReset').addEventListener('click', () => { placeRobot(START_POSES[$('startSelect').value] || START_POSES.wall); });
 function placeRobot(p) {
   sim.pose = { x: p.x, y: p.y, h: (p.hDeg != null ? p.hDeg : 90) * Math.PI / 180 };
   for (const m of sim.motors) { m.shaftVel = 0; }
@@ -2604,7 +3052,7 @@ function challengeCtx() {
   };
 }
 function clawServo() { return sim.servos.find(s => s.name === 'claw' && !s.cont && s.used) || sim.servos.find(s => !s.cont && s.used); }
-function evaluateChallenge(phase) {
+function evaluateChallenge(phase) { return;
   if (!activeChallenge || (challengeResult && challengeResult.pass)) return;
   if (!run.className) return;
   if (phase === 'live' && activeChallenge.endOnly) return;
@@ -2628,7 +3076,7 @@ function startChallenge(lesson) {
   updateBanner(); renderLessons(true);
   if (window.matchMedia('(max-width: 1040px)').matches) $('field').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-function updateBanner() {
+function updateBanner() { return;
   const b = $('banner');
   if (!activeChallenge) { b.hidden = true; return; }
   b.hidden = false;
@@ -2639,11 +3087,11 @@ function updateBanner() {
   t.appendChild(bold);
   t.appendChild(document.createTextNode(challengeResult ? challengeResult.msg : activeChallenge.text));
 }
-$('btnEndChallenge').addEventListener('click', () => { activeChallenge = null; challengeResult = null; updateBanner(); renderLessons(true); });
+
 
 // ---------- Lessons UI ----------
 let openLesson = store.get('bbsim.openLesson', 'l1');
-function renderLessons(keepOpen) {
+function renderLessons(keepOpen) { return;
   const host = $('lessons');
   const openNow = keepOpen ? [...host.querySelectorAll('details[open]')].map(d => d.dataset.id) : [openLesson];
   host.textContent = '';
@@ -2665,13 +3113,7 @@ function renderLessons(keepOpen) {
   const p = document.createElement('p'); p.className = 'small muted'; p.textContent = `${passed} of ${total} challenges passed.`;
   host.appendChild(p);
 }
-$('lessons').addEventListener('click', (e) => {
-  const t = e.target.closest('button'); if (!t) return;
-  if (t.dataset.open) { if (files[t.dataset.open]) openFile(t.dataset.open); }
-  else if (t.dataset.solution) addSolution(t.dataset.solution);
-  else if (t.dataset.challenge) startChallenge(LESSONS.find(L => L.id === t.dataset.challenge));
-  else if (t.dataset.newfile) newFile();
-});
+
 
 // ---------- Robot settings UI ----------
 function bindSettings() {
@@ -2699,6 +3141,7 @@ window.addEventListener('keydown', (e) => {
   if (document.activeElement === $('field') || run.state === 'running') e.preventDefault();
 });
 window.addEventListener('keyup', (e) => keys.delete(e.code));
+window.addEventListener('keydown', (e) => { if (isEditable(document.activeElement) || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return; if (e.code === 'KeyN') humanNectar(); });
 window.addEventListener('blur', () => keys.clear());
 function bindStick(id, side) {
   const el = $(id);
@@ -2752,75 +3195,36 @@ function pollInput() {
 // ---------- Rendering ----------
 const cv = $('field'), ctx2 = cv.getContext('2d');
 let C = {};
-function readColors() { const cs = getComputedStyle(document.documentElement); for (const n of ['tile', 'tile2', 'seam', 'wall', 'robot', 'robot-edge', 'wheel', 'fwd', 'rev', 'zone', 'trail', 'accent', 'muted', 'panel', 'ink']) C[n] = cs.getPropertyValue('--' + n).trim(); }
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const n of ['tile', 'tile2', 'seam', 'wall', 'robot', 'robot-edge', 'wheel', 'fwd', 'rev', 'zone', 'trail', 'accent', 'muted', 'panel', 'ink', 'red', 'blue']) C[n] = cs.getPropertyValue('--' + n).trim(); }
 readColors();
 try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors); } catch (e) { /* older browsers */ }
 new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
 function draw() {
   const dpr = window.devicePixelRatio || 1, size = Math.round(cv.clientWidth * dpr);
-  if (!size) return;
+  if (!size || !game.hives) return;
   if (cv.width !== size) { cv.width = size; cv.height = size; }
-  const k = size / FIELD, g = ctx2;
-  const X = (x) => (x + FH) * k, Y = (y) => (FH - y) * k;
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { g.fillStyle = (i + j) % 2 ? C.tile2 : C.tile; g.fillRect(i * 24 * k, j * 24 * k, 24 * k + 1, 24 * k + 1); }
-  g.strokeStyle = C.seam; g.lineWidth = Math.max(1, k * 0.25);
-  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(i * 24 * k, 0); g.lineTo(i * 24 * k, size); g.stroke(); g.beginPath(); g.moveTo(0, i * 24 * k); g.lineTo(size, i * 24 * k); g.stroke(); }
-  g.fillStyle = C.muted; g.font = `${Math.max(9, k * 2.6)}px "JetBrains Mono", monospace`; g.textBaseline = 'top';
-  for (let v = -48; v <= 48; v += 24) { g.fillText(String(v), X(v) + 3, Y(-FH) - k * 4); g.fillText(String(v), X(-FH) + 3, Y(v) + 2); }
-  g.fillText('1 tile = 24 in', X(-FH) + 4, 4);
-  // zone + marks
-  const ch = activeChallenge;
-  if (ch && ch.zone) {
-    const z = ch.zone; g.fillStyle = C.zone; g.globalAlpha = 0.16; g.fillRect(X(z.x - z.w / 2), Y(z.y + z.h / 2), z.w * k, z.h * k); g.globalAlpha = 1;
-    g.setLineDash([k * 2, k * 1.5]); g.strokeStyle = C.zone; g.lineWidth = Math.max(1.5, k * 0.4); g.strokeRect(X(z.x - z.w / 2), Y(z.y + z.h / 2), z.w * k, z.h * k); g.setLineDash([]);
-    g.fillStyle = C.zone; g.font = `600 ${Math.max(10, k * 3)}px Barlow, sans-serif`; g.fillText(z.label || 'Zone', X(z.x - z.w / 2) + 4, Y(z.y + z.h / 2) + 4);
-  }
-  if (ch && ch.marks) for (const set of [ch.marks, ch.marksAlt || []]) for (const mk of set) { g.strokeStyle = C.zone; g.lineWidth = Math.max(1.5, k * 0.4); g.beginPath(); g.arc(X(mk.x), Y(mk.y), 6 * k, 0, Math.PI * 2); g.stroke(); }
-  if (ch && ch.start) { g.save(); g.translate(X(ch.start.x), Y(ch.start.y)); g.rotate(-(ch.start.hDeg) * Math.PI / 180); g.setLineDash([k, k]); g.strokeStyle = C.muted; g.lineWidth = 1; g.strokeRect(-HALF * k, -HALF * k, ROBOT * k, ROBOT * k); g.restore(); }
-  // trail
-  if (sim.trail.length > 1) { g.strokeStyle = C.trail; g.lineWidth = Math.max(1.5, k * 0.5); g.lineJoin = 'round'; g.beginPath(); sim.trail.forEach((p, i) => i ? g.lineTo(X(p.x), Y(p.y)) : g.moveTo(X(p.x), Y(p.y))); g.lineTo(X(sim.pose.x), Y(sim.pose.y)); g.stroke(); }
+  const k = size / (VIEW * 2), g = ctx2;
+  const X = (x) => (x + VIEW) * k, Y = (y) => (VIEW - y) * k;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.textBaseline = 'top'; g.textAlign = 'left';
+  drawGame(g, k, X, Y, size);
+  const ms = mechState();
+  drawShotPreview(g, k, X, Y, ms);
   // walls
-  g.strokeStyle = C.wall; g.lineWidth = Math.max(3, k * 1.2); g.strokeRect(g.lineWidth / 2, g.lineWidth / 2, size - g.lineWidth, size - g.lineWidth);
+  g.strokeStyle = C.wall; g.lineWidth = Math.max(3, k * 1.2); g.strokeRect(X(-FH), Y(FH), FIELD * k, FIELD * k);
   // robot
   const p = sim.pose;
   g.save(); g.translate(X(p.x), Y(p.y)); g.rotate(-p.h); g.scale(k, k);
   g.fillStyle = C.robot; g.strokeStyle = C['robot-edge']; g.lineWidth = 0.35;
   g.beginPath(); g.roundRect ? g.roundRect(-HALF, -HALF, ROBOT, ROBOT, 1.2) : g.rect(-HALF, -HALF, ROBOT, ROBOT); g.fill(); g.stroke();
-  g.fillStyle = C.accent; g.fillRect(HALF - 1.6, -HALF + 1, 1.6, ROBOT - 2);
-  g.beginPath(); g.moveTo(HALF - 2.5, 0); g.lineTo(HALF - 6.5, -3); g.lineTo(HALF - 6.5, 3); g.closePath(); g.fill();
-  const ws = sim.wheelSpeeds, maxS = 65;
-  const wheels = [['FL', 5.4, -6.8], ['FR', 5.4, 6.8], ['BL', -5.4, -6.8], ['BR', -5.4, 6.8]];
-  for (const [n, wx, wy] of wheels) {
-    const v = ws[n] || 0;
-    g.fillStyle = Math.abs(v) < 0.5 ? C.wheel : v > 0 ? C.fwd : C.rev;
-    g.fillRect(wx - 2, wy - 0.9, 4, 1.8);
+  g.fillStyle = C.red; g.fillRect(-HALF + 0.8, -HALF + 0.8, 3, 1.4); g.fillRect(-HALF + 0.8, HALF - 2.2, 3, 1.4);
+  const ws = sim.wheelSpeeds;
+  for (const [n, wx, wy] of [['FL', 5.4, -6.8], ['FR', 5.4, 6.8], ['BL', -5.4, -6.8], ['BR', -5.4, 6.8]]) {
+    const v = ws[n] || 0; g.fillStyle = Math.abs(v) < 0.5 ? C.wheel : v > 0 ? C.fwd : C.rev; g.fillRect(wx - 2, wy - 0.9, 4, 1.8);
     if (settings.drive === 'mecanum') { g.strokeStyle = C.robot; g.lineWidth = 0.25; const dir = (n === 'FL' || n === 'BR') ? 1 : -1; for (let t = -1.5; t <= 1.5; t += 1) { g.beginPath(); g.moveTo(wx + t - 0.5, wy - 0.8 * dir); g.lineTo(wx + t + 0.5, wy + 0.8 * dir); g.stroke(); } }
-    if (Math.abs(v) >= 0.5) {
-      const len = clip(Math.abs(v) / maxS, 0.15, 1) * 7 * Math.sign(v), oy = wy + (wy < 0 ? -2.1 : 2.1);
-      g.strokeStyle = g.fillStyle; g.lineWidth = 0.6; g.beginPath(); g.moveTo(wx, oy); g.lineTo(wx + len, oy); g.stroke();
-      g.beginPath(); g.moveTo(wx + len, oy); g.lineTo(wx + len - Math.sign(len) * 1.2, oy - 0.8); g.lineTo(wx + len - Math.sign(len) * 1.2, oy + 0.8); g.closePath(); g.fill();
-    }
   }
+  drawRobotExtras(g, ms);
   g.restore();
-  drawMech();
-}
-const mc = $('mechCanvas'), mg = mc.getContext('2d');
-function drawMech() {
-  const claw = clawServo();
-  if (!sim.armUsed && !claw) { $('mechText').textContent = 'Arm and claw appear when your code uses the "arm" motor or "claw" servo.'; mg.clearRect(0, 0, mc.width, mc.height); return; }
-  mg.clearRect(0, 0, mc.width, mc.height);
-  const bx = 60, by = 118, L = 90, a = sim.armAngle * Math.PI / 180;
-  mg.strokeStyle = C.muted; mg.lineWidth = 2; mg.beginPath(); mg.moveTo(10, by + 14); mg.lineTo(230, by + 14); mg.stroke();
-  mg.fillStyle = C.robot; mg.fillRect(bx - 22, by, 44, 14);
-  const ex = bx + Math.cos(a) * L, ey = by - Math.sin(a) * L;
-  mg.strokeStyle = C.accent; mg.lineWidth = 8; mg.lineCap = 'round'; mg.beginPath(); mg.moveTo(bx, by); mg.lineTo(ex, ey); mg.stroke();
-  const cp = claw ? physicalServoPos(claw) : null, gap = cp == null ? 10 : 4 + cp * 22;
-  const nx = -Math.sin(a), ny = -Math.cos(a), dx = Math.cos(a), dy = -Math.sin(a);
-  mg.strokeStyle = C.ink; mg.lineWidth = 4;
-  for (const s of [-1, 1]) { const sx = ex + nx * gap / 2 * s, sy = ey + ny * gap / 2 * s; mg.beginPath(); mg.moveTo(sx, sy); mg.lineTo(sx + dx * 16, sy + dy * 16); mg.stroke(); }
-  mg.fillStyle = C.ink; mg.beginPath(); mg.arc(bx, by, 5, 0, Math.PI * 2); mg.fill();
-  $('mechText').textContent = `Arm ${sim.armUsed ? sim.armAngle.toFixed(1) + '°' : 'unused'} · Claw ${cp == null ? 'unused' : cp.toFixed(2)}`;
+  drawHivesAndAir(g, k, X, Y);
 }
 
 // ---------- Main loop ----------
@@ -2845,17 +3249,33 @@ function tickFrame() {
     if (run.state === 'running' && run.matchEnd) { const left = Math.max(0, (run.matchEnd - t) / 1000); mc2.textContent = `${run.annType === 'Autonomous' ? 'Auto' : 'TeleOp'} ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`; }
     else mc2.textContent = run.state === 'init' ? 'waiting for START' : '–';
   }
+  if (frame % 6 === 0) renderScore();
   draw(); frame++;
   requestAnimationFrame(tickFrame);
+}
+
+// ---------- Game bar ----------
+function bindGameBar() {
+  const ss = $('startSelect');
+  for (const [k2, v] of Object.entries(START_POSES)) { const o = document.createElement('option'); o.value = k2; o.textContent = v.label; ss.appendChild(o); }
+  ss.value = store.get('bbsim.start', 'wall');
+  ss.addEventListener('change', () => { store.set('bbsim.start', ss.value); if (run.state === 'idle' && !matchActive()) placeRobot(START_POSES[ss.value]); });
+  ['autoSelect', 'teleSelect'].forEach(id => $(id).addEventListener('change', () => store.set('bbsim.' + id, $(id).value)));
+  $('btnMatch').addEventListener('click', startMatch);
+  $('btnField').addEventListener('click', () => { if (run.state !== 'idle') requestStop('button'); game.match = { phase: 'free' }; placeRobot(START_POSES[ss.value] || START_POSES.wall); resetField(); warned.clear(); log('info', 'Field reset (free play).'); });
+  $('btnNectar').addEventListener('click', humanNectar);
+  $('optPreview').checked = game.preview; $('optPreview').addEventListener('change', e => { game.preview = e.target.checked; settings.preview = e.target.checked; saveSettings(); });
+  $('optTip').value = String(game.tipWeight); $('optTip').addEventListener('change', e => { game.tipWeight = Number(e.target.value) || 8; settings.tipWeight = game.tipWeight; saveSettings(); });
 }
 
 // ---------- Boot ----------
 (async function boot() {
   bindSettings();
+  bindGameBar();
   editor.value = files[activeFile]; renderFiles();
   renderLessons(false);
-  showPane(store.get('bbsim.pane', 'learn'));
-  placeRobot(START); buildHardware();
+  showPane(['code','explain','robot','game'].includes(store.get('bbsim.pane2', 'code')) ? store.get('bbsim.pane2', 'code') : 'code');
+  placeRobot(START_POSES.wall); buildHardware(); resetField(); game.tipWeight = Number(settings.tipWeight) || 8; game.preview = settings.preview !== false;
   await compileWorkspace(files); lastCompileAt = Date.now();
   refreshOpModes(); showCompileStatusFor(activeFile);
   for (const e of compileErrors) log('err', `${e.file}${e.line ? ' line ' + e.line : ''}: ${e.message}`);

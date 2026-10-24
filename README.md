@@ -1,38 +1,35 @@
-# Biobuzz Robot Sim
+# Biobuzz Playground
 
-A browser-based FTC robot simulator and 3-day course built around the team code in
-[Sparky384/2026-Biobuzz](https://github.com/Sparky384/2026-Biobuzz).
+A browser playground for FTC team [Sparky384/2026-Biobuzz](https://github.com/Sparky384/2026-Biobuzz): your team's Java
+runs on a virtual robot in the 2026-27 **BIOBUZZ** arena, laid out and scored per the Competition Manual (TU06).
 
-- **Lessons**: 12 lessons over 3 days. Each challenge is checked automatically on the virtual field.
-- **Explain my code**: click any line of your OpModes to see what it does, plus an automatic review that flags common FTC bugs.
-- **Code**: edit Java and run it on a simulated robot (motors, encoders, IMU, arm, claw, distance and touch sensors).
+- **Arena**: HIVE structure with two tipping HIVES, 4 FLOWERS, GARDENS, LOADING ZONES, 40 POLLEN and 16 NECTAR staged per §10.3.1.
+- **Robot**: drivetrain plus intake, flywheel shooter, feeder, hood servo and color sensor (edit them in *Robot setup*).
+- **Match**: 30 s AUTO, 8 s transition, 2:00 TELEOP, live scoring, ranking-point progress, and the main fouls (G407, G408, G410, G418, G426).
+- **Code**: edit Java in the browser. `BiobuzzAuto` (tips the HIVE, scores 36) and `BiobuzzTeleOp` are included as examples.
+- **Explain my code**: click any line to see what it does, plus an automatic bug review.
 
-Everything is one file (`index.html`). It needs no server, no install and no account, and it works offline once loaded.
-Your edits and lesson progress are saved in the browser you use.
+One file (`index.html`), no install, works offline once loaded. Edits are saved in your browser.
 
 ## Put it on GitHub Pages
 
-1. On github.com, click **New repository**. Name it `biobuzz-sim`, make it **Public**, and click **Create repository**.
-2. Click **uploading an existing file**. Drag in `index.html`, `README.md` and `.nojekyll`, then click **Commit changes**.
-   (On a Mac, press Cmd+Shift+. in Finder to see the hidden `.nojekyll` file. It's optional.)
-3. Go to **Settings → Pages**. Under "Build and deployment", set Source to **Deploy from a branch**, Branch to **main**, folder **/ (root)**, then click **Save**.
-4. After about a minute the site is live at `https://YOUR-USERNAME.github.io/biobuzz-sim/`.
+1. On github.com: **New repository** → name it `biobuzz-sim` → **Public** → **Create repository**.
+2. **uploading an existing file** → drag in `index.html`, `README.md` and `.nojekyll` → **Commit changes**.
+3. **Settings → Pages** → Source **Deploy from a branch**, Branch **main**, folder **/ (root)** → **Save**.
+4. In about a minute it's live at `https://YOUR-USERNAME.github.io/biobuzz-sim/`.
 
-To update it later, upload the new `index.html` to the same repo. Pages redeploys on its own.
+To update, upload the new `index.html` to the same repo.
 
-## Using it at school
+## At school
 
-- It runs in Chrome, Edge, Safari or Firefox, including school Chromebooks.
-- If your school blocks `github.io`, download `index.html` (to Google Drive or a USB stick) and open it directly.
-  It works the same way from a local file.
-- If Google Fonts is blocked, the page falls back to system fonts automatically.
-- Progress is saved per browser. If your school browser clears data when you log out, your lesson checkmarks reset,
-  but the lessons themselves are always there.
+If `github.io` is blocked, open `index.html` straight from Google Drive or a USB stick. It works the same way.
 
 ## Controls
 
-Click the field, then use **W A S D** for the left stick, the **arrow keys** for the right stick, **K L J I** for A B X Y,
-**Q / E** for the bumpers, **Z / C** for the triggers and **T F G H** for the dpad. A USB or Bluetooth gamepad also works,
-and on a touchscreen you can drag the on-screen sticks.
+Click the field first. Left stick **W A S D**, right stick **arrow keys**, A B X Y **K L J I**, bumpers **Q E**, triggers **Z C**,
+dpad **T F G H**, human player enters NECTAR **N**. A real gamepad works too.
 
-The simulator understands the subset of Java that FTC code usually uses. Always build in Android Studio before trusting code on the real robot.
+With *Biobuzz TeleOp*: W/S drive, ←/→ turn, C intake, Z spit out, L flywheel on/off, hold K to shoot, T/G hood angle, F/H flywheel speed.
+
+Note: the manual doesn't say how much weight tips a HIVE, so the sim uses an adjustable value (default 8, POLLEN = 1, NECTAR = 2).
+The simulator understands the Java that FTC code usually uses; always build in Android Studio before trusting code on the real robot.
