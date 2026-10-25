@@ -233,7 +233,35 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
 .rules th:not(:first-child), .rules td:not(:first-child) { text-align: center; width: 64px; font-variant-numeric: tabular-nums; }
 .rules th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .rulelist { padding-left: 18px; margin: 4px 0; } .rulelist li { margin: 3px 0; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* modes, folders, bench */
+.modeswitch, .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; padding: 3px; background: var(--panel); gap: 2px; }
+.modeswitch button, .seg button { border: 0; background: none; color: var(--muted); font: 700 14px var(--f-display); letter-spacing: .08em; text-transform: uppercase; padding: 7px 12px; border-radius: 6px; cursor: pointer; }
+.modeswitch button[aria-selected="true"], .seg button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.folderbar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; margin-bottom: 8px; }
+a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
+.benchbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.benchcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; padding: 12px; }
+.bcard { border: 1px solid var(--line); border-radius: 9px; padding: 10px; background: var(--sunk); display: grid; gap: 8px; align-content: start; min-width: 0; }
+.bhead { display: flex; gap: 8px; align-items: baseline; min-width: 0; } .bhead b { font: 600 13px var(--f-mono); overflow-wrap: anywhere; }
+.btype { font: 700 10.5px var(--f-body); text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.bvis { display: flex; justify-content: center; align-items: center; height: 84px; }
+.bvals { font: 12px/1.5 var(--f-mono); white-space: pre-wrap; color: var(--ink); min-height: 3em; }
+.wheel { width: 72px; height: 72px; border-radius: 50%; border: 6px solid var(--wheel); position: relative; }
+.wheel.fwd { border-color: var(--fwd); } .wheel.rev { border-color: var(--rev); }
+.wheel i { position: absolute; left: 50%; top: 4px; width: 6px; height: 26px; margin-left: -3px; border-radius: 3px; background: var(--ink); }
+.servo { width: 72px; height: 72px; border-radius: 50%; border: 2px dashed var(--line); position: relative; }
+.servo i { position: absolute; left: 50%; top: 50%; width: 6px; height: 34px; margin: -34px 0 0 -3px; transform-origin: 50% 100%; border-radius: 3px; background: var(--accent); }
+.pressbtn { width: 76px; height: 76px; border-radius: 50%; border: 3px solid var(--line); background: var(--panel); color: var(--muted); font: 700 13px var(--f-display); letter-spacing: .1em; cursor: pointer; touch-action: none; box-shadow: 0 4px 0 var(--line); }
+.pressbtn.on { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lamp { width: 46px; height: 46px; border-radius: 50%; background: var(--line); border: 2px solid var(--line); }
+.lamp.lit { background: var(--lamp); box-shadow: 0 0 18px var(--lamp); }
+.bslider { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); } .bslider input { width: 100%; accent-color: var(--accent); } .bslider output { color: var(--ink); font-weight: 600; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; } .sw { width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--line); cursor: pointer; color: var(--muted); }
+.sw.on { border-color: var(--accent); }
+.pad.rumbling { animation: rumble .09s linear infinite; }
+@keyframes rumble { 0% { transform: translate(0,0); } 25% { transform: translate(2px,-1px); } 50% { transform: translate(-2px,1px); } 75% { transform: translate(1px,2px); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .pad.rumbling { animation: none; outline: 3px solid var(--accent); } }
 </style>
 </head>
 <body>
@@ -241,7 +269,11 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
 <div class="wrap">
   <header class="top">
     <div class="brand">Biobuzz <b>Playground</b></div>
-    <div class="sub">Your team's Java on a virtual robot in the 2026-27 BIOBUZZ arena. Code from <code>Sparky384/2026-Biobuzz</code>, FTC SDK 12.0 API.</div>
+    <div class="modeswitch" role="tablist" aria-label="Section">
+      <button role="tab" data-mode="course" id="modeCourse">YT Course</button>
+      <button role="tab" data-mode="arena" id="modeArena">BIOBUZZ Arena</button>
+    </div>
+    <div class="sub" id="modeSub"></div>
   </header>
 
   <div class="grid">
@@ -297,6 +329,11 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
       </div>
 
       <div class="pane" id="pane-code" role="tabpanel">
+        <div class="folderbar" id="folderBar">
+          <label class="gb2" style="flex:1; min-width:220px"><span>Folder</span><select id="folderSel"></select></label>
+          <div class="row"><a class="btn sm" id="ytLink" target="_blank" rel="noopener">Watch on YouTube</a><button class="btn sm primary" id="btnDone">Finished this video → next</button></div>
+        </div>
+        <p class="small muted" id="folderNote" style="margin:0 0 10px"></p>
         <div class="filebar" id="files"></div>
         <div class="editorwrap"><textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Java editor"></textarea></div>
         <div class="edstatus">
@@ -304,6 +341,7 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           <span class="row">
             <button class="btn sm" id="btnExplainThis">Explain this file</button>
             <button class="btn sm" id="btnNewFile">New OpMode</button>
+            <button class="btn sm" id="btnNewClass">New class</button>
             <button class="btn sm" id="btnRevert">Revert file</button>
             <button class="btn sm" id="btnDelete">Delete file</button>
           </span>
@@ -337,7 +375,7 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           <label class="check"><input type="checkbox" id="optVar" checked><span><b>Motor variation.</b> Each motor is a few percent stronger or weaker every INIT, like real motors and batteries. Time-based autos drift. Encoder modes (RUN_USING_ENCODER, RUN_TO_POSITION) regulate speed, so they don't.</span></label>
         </div>
         <h4 class="fieldlabel" style="margin-top:18px">Robot configuration (what the Control Hub knows)</h4>
-        <p class="small muted" style="margin:0 0 6px">One device per line: <code>type name [slot]</code>. Names must match the strings in <code>hardwareMap.get()</code> exactly. Slots FL/FR/BL/BR place drive motors on the chassis. Types: motor, servo, crservo, imu, distance, touch.</p>
+        <p class="small muted" style="margin:0 0 6px">One device per line: <code>type name [slot]</code>. Names must match the strings in <code>hardwareMap.get()</code> exactly. Slots FL/FR/BL/BR place drive motors on the chassis. Types: motor, servo, crservo, imu, distance, touch, color, digital, analog. Options: <code>rpm=</code> <code>tpr=</code>.</p>
         <textarea id="cfgText" spellcheck="false" aria-label="Robot configuration"></textarea>
         <div class="row" style="margin-top:8px"><button class="btn sm" id="btnCfgReset">Restore default configuration</button><span class="small muted" id="cfgMsg"></span></div>
       </div>
@@ -358,6 +396,11 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           <span><button class="btn sm" id="btnReset">Reset robot</button></span>
         </div>
       </div>
+      <div id="benchView" hidden>
+        <div class="benchbar"><div class="seg" role="tablist"><button data-bview="bench" id="bvBench">Test bench</button><button data-bview="field" id="bvField">Practice field</button></div><span class="small muted">Hold a button (or <kbd>Space</kbd>) to press a touch sensor. Drag sliders to move objects.</span></div>
+        <div class="benchcards" id="benchCards"></div>
+      </div>
+      <div id="arenaView">
       <div class="gamebar">
         <label class="gb2"><span>Start</span><select id="startSelect"></select></label>
         <label class="gb2"><span>Auto</span><select id="autoSelect"></select></label>
@@ -375,7 +418,8 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
       <div class="sbrows" id="scoreRows"></div>
       <div class="rpline" id="rpLine"></div>
       <div class="mechline" id="mechText"></div>
-      <div class="poseline"><span id="poseText"></span><span id="speedText"></span></div>
+      </div>
+      <div class="poseline" id="poseLine"><span id="poseText"></span><span id="speedText"></span></div>
       <div class="lower">
         <div>
           <div class="screenhead"><span>Driver Hub telemetry</span><span id="teleCount"></span></div>
@@ -386,7 +430,7 @@ select, input[type="number"] { font: 500 14px var(--f-body); color: var(--ink); 
           <div class="screen" id="log"></div>
         </div>
       </div>
-      <div class="pad">
+      <div class="pad" id="padWrap">
         <div class="padgrid">
           <div class="stick" id="stickL" aria-label="Left stick"><div class="knob"></div><div class="lab">left stick</div></div>
           <div class="padmid">
@@ -1629,7 +1673,20 @@ color intakeColor
 distance frontDistance
 touch frontBumper`;
 
+const DEFAULT_BENCH_CFG = `digital touch_sensor
+motor motor
+servo servo
+distance distance_sensor
+color color_sensor
+analog pot
+imu imu
+digital led_red
+digital led_green`;
+let MODE = store.get('bbsim.mode', 'course') === 'arena' ? 'arena' : 'course';
+const bench = { touch: {}, dist: {}, color: {}, pot: {}, yaw: 0, yawZero: 0, rumbleUntil: 0, view: 'bench' };
 const settings = Object.assign({ drive: 'tank', motor: '312', wheel: '3.7795', mirror: true, variation: true, speed: '1', cfg: DEFAULT_CFG }, store.get('bbsim.settings', {}));
+if (!settings.benchCfg) settings.benchCfg = DEFAULT_BENCH_CFG;
+const currentCfg = () => MODE === 'course' ? settings.benchCfg : settings.cfg;
 if (settings.cfgVersion !== 2) { settings.cfg = DEFAULT_CFG; settings.cfgVersion = 2; }
 function saveSettings() { store.set('bbsim.settings', settings); }
 
@@ -1736,7 +1793,8 @@ function makeGamepad(id) {
     g[cap(b) + 'WasReleased'] = () => { const v = !!g._release[b]; g._release[b] = false; return v; };
   }
   g.atRest = () => Math.abs(g.left_stick_x) < .05 && Math.abs(g.left_stick_y) < .05 && Math.abs(g.right_stick_x) < .05 && Math.abs(g.right_stick_y) < .05 && g.left_trigger < .05 && g.right_trigger < .05;
-  g.rumble = () => { log('info', `gamepad${id}.rumble()`); }; g.rumbleBlips = g.rumble; g.stopRumble = () => {}; g.setLedColor = () => {}; g.isRumbling = () => false;
+  g.rumble = (a, b, ms) => { const dur = typeof ms === 'number' ? ms : (typeof a === 'number' && b === undefined ? a : 500); bench.rumbleUntil = nowMs() + (dur < 0 ? 100000 : dur); bench.rumblePad = id; };
+  g.isRumbling = () => nowMs() < bench.rumbleUntil; g.rumbleBlips = (n) => g.rumble(Math.max(1, n || 1) * 250); g.runRumbleEffect = () => g.rumble(600); g.stopRumble = () => { bench.rumbleUntil = 0; }; g.setLedColor = (r, gg, b, ms) => { bench.padLed = [r, gg, b]; };
   g._set = (state) => {
     for (const b of BTN) {
       const nv = !!state[b];
@@ -1766,7 +1824,7 @@ function parseConfig(text) {
     const [type, name, ...rest] = line.split(/\s+/);
     let slot = null; const opts = {};
     for (const t of rest) { const kv = /^(\w+)=([\d.]+)$/.exec(t); if (kv) opts[kv[1].toLowerCase()] = +kv[2]; else slot = t; }
-    if (!/^(motor|servo|crservo|imu|distance|touch|color)$/.test(type)) { errors.push(`Line ${i + 1}: unknown type "${type}"`); return; }
+    if (!/^(motor|servo|crservo|imu|distance|touch|color|digital|analog)$/.test(type)) { errors.push(`Line ${i + 1}: unknown type "${type}"`); return; }
     if (!name) { errors.push(`Line ${i + 1}: missing a name`); return; }
     if (names.has(name)) { errors.push(`Line ${i + 1}: "${name}" is used twice`); return; }
     names.add(name);
@@ -1782,6 +1840,8 @@ const TYPE_OK = {
   imu: ['IMU', 'BHI260IMU', 'BNO055IMUNew'],
   distance: ['DistanceSensor', 'Rev2mDistanceSensor', 'DistanceSensorEx'],
   touch: ['TouchSensor', 'DigitalChannel', 'RevTouchSensor'],
+  digital: ['DigitalChannel', 'TouchSensor', 'DigitalChannelImpl'],
+  analog: ['AnalogInput', 'AnalogSensor'],
   color: ['ColorSensor', 'NormalizedColorSensor', 'RevColorSensorV3', 'ColorRangeSensor', 'DistanceSensor']
 };
 
@@ -1854,7 +1914,7 @@ function makeServo(dev, cont) {
 }
 function physicalServoPos(s) { if (s.pos == null) return null; const p = s.dir < 0 ? 1 - s.pos : s.pos; return s.lo + p * (s.hi - s.lo); }
 
-function yawDeg() { return normDeg((sim.pose.h - sim.imuZero) * 180 / Math.PI); }
+function yawDeg() { if (MODE === 'course' && bench.view === 'bench') return normDeg(bench.yaw - bench.yawZero); return normDeg((sim.pose.h - sim.imuZero) * 180 / Math.PI); }
 function makeImu(dev) {
   const imu = { dev, name: dev.name, initialized: false };
   const angles = () => {
@@ -1867,7 +1927,7 @@ function makeImu(dev) {
   };
   imu.api = {
     initialize() { imu.initialized = true; return true; },
-    resetYaw() { sim.imuZero = sim.pose.h; },
+    resetYaw() { sim.imuZero = sim.pose.h; bench.yawZero = bench.yaw; },
     getRobotYawPitchRollAngles: angles,
     getRobotOrientation(ref, order, unit) { const y = yawDeg(); const v = unit === 'RADIANS' ? y * Math.PI / 180 : y; return { firstAngle: v, secondAngle: 0, thirdAngle: 0, angleUnit: unit || 'DEGREES' }; },
     getRobotAngularVelocity(unit) { const w = sim.omega * 180 / Math.PI; return { zRotationRate: unit === 'RADIANS' ? sim.omega : w, xRotationRate: 0, yRotationRate: 0, unit: unit || 'DEGREES' }; },
@@ -1888,12 +1948,12 @@ const DistanceUnit = Object.freeze({ INCH: 'INCH', CM: 'CM', MM: 'MM', METER: 'M
 function convertIn(v, unit) { return unit === 'CM' ? v * 2.54 : unit === 'MM' ? v * 25.4 : unit === 'METER' ? v * 0.0254 : v; }
 function makeDistance(dev) {
   return { dev, api: {
-    getDistance(unit) { run.io = true; const d = frontDistanceIn(); const v = d > 78 ? 127.95 : d + (Math.random() - .5) * 0.2; return convertIn(v, unit); },
+    getDistance(unit) { run.io = true; const d = MODE === 'course' && bench.view === 'bench' ? (bench.dist[dev.name] != null ? bench.dist[dev.name] : 20) : frontDistanceIn(); const v = d > 78 ? 127.95 : d + (Math.random() - .5) * 0.2; return convertIn(v, unit); },
     getDeviceName() { return dev.name; }, __toString() { return 'DistanceSensor ' + dev.name; }
   } };
 }
 function makeTouch(dev) {
-  const pressed = () => sim.wall && frontDistanceIn() < 0.6;
+  const pressed = () => MODE === 'course' ? !!bench.touch[dev.name] : sim.wall && frontDistanceIn() < 0.6;
   return { dev, api: {
     isPressed() { run.io = true; return pressed(); }, getValue() { return pressed() ? 1 : 0; },
     getState() { return !pressed(); }, setMode() {}, getDeviceName() { return dev.name; }
@@ -1901,19 +1961,36 @@ function makeTouch(dev) {
 }
 
 function makeColor(dev) {
-  const rgb = () => { const b = game.hopper.length ? ballById(game.hopper[0]) : null; if (!b) return [0.04, 0.05, 0.05]; return b.kind === 'pollen' ? [0.62, 0.55, 0.08] : b.kind === 'red' ? [0.7, 0.08, 0.07] : [0.06, 0.14, 0.72]; };
+  const rgb = () => { if (MODE === 'course') return bench.color[dev.name] || [0.03, 0.04, 0.04]; const b = game.hopper.length ? ballById(game.hopper[0]) : null; if (!b) return [0.04, 0.05, 0.05]; return b.kind === 'pollen' ? [0.62, 0.55, 0.08] : b.kind === 'red' ? [0.7, 0.08, 0.07] : [0.06, 0.14, 0.72]; };
   const api = {
     getNormalizedColors() { run.io = true; const [r, g, b] = rgb(); return { red: r, green: g, blue: b, alpha: r + g + b, __toString() { return `r=${r} g=${g} b=${b}`; } }; },
     red() { return Math.round(rgb()[0] * 1000); }, green() { return Math.round(rgb()[1] * 1000); }, blue() { return Math.round(rgb()[2] * 1000); }, alpha() { const c = rgb(); return Math.round((c[0] + c[1] + c[2]) * 1000); }, argb() { return 0; },
-    getDistance(unit) { return convertIn(game.hopper.length ? 0.8 : 4.5, unit); }, setGain() {}, getGain() { return 2; }, enableLed() {},
+    getDistance(unit) { if (MODE === 'course') return convertIn(bench.color[dev.name] ? 0.8 : 4.5, unit); return convertIn(game.hopper.length ? 0.8 : 4.5, unit); }, setGain() {}, getGain() { return 2; }, enableLed() {},
     getDeviceName() { return dev.name; }, __toString() { return 'ColorSensor ' + dev.name; }
   };
   return { dev, api };
 }
 
+function makeDigital(dev) {
+  const d = { dev, mode: 'INPUT', out: true };
+  const pressed = () => !!bench.touch[dev.name];
+  d.api = {
+    setMode(m) { d.mode = m === 'OUTPUT' ? 'OUTPUT' : 'INPUT'; }, getMode() { return d.mode; },
+    getState() { run.io = true; return d.mode === 'OUTPUT' ? d.out : !pressed(); },   // REV touch: HIGH (true) when NOT pressed
+    setState(v) { run.io = true; d.out = !!v; },
+    isPressed() { run.io = true; return pressed(); }, getValue() { return pressed() ? 1 : 0; },
+    getDeviceName() { return dev.name; }, __toString() { return 'DigitalChannel ' + dev.name; }
+  };
+  return d;
+}
+function makeAnalog(dev) {
+  const v = () => (bench.pot[dev.name] != null ? bench.pot[dev.name] : 135) / 270 * 3.3;
+  return { dev, api: { getVoltage() { run.io = true; return v(); }, getMaxVoltage() { return 3.3; }, getDeviceName() { return dev.name; }, __toString() { return 'AnalogInput ' + dev.name; } } };
+}
+
 let hwDevices = new Map();
 function buildHardware() {
-  const { devices, errors } = parseConfig(settings.cfg);
+  const { devices, errors } = parseConfig(currentCfg());
   if (errors.length) log('warn', 'Robot configuration: ' + errors.join('; '));
   hwDevices = new Map();
   sim.motors = []; sim.servos = []; sim.armUsed = false;
@@ -1925,6 +2002,8 @@ function buildHardware() {
     else if (d.type === 'distance') obj = makeDistance(d);
     else if (d.type === 'touch') obj = makeTouch(d);
     else if (d.type === 'color') obj = makeColor(d);
+    else if (d.type === 'digital') obj = makeDigital(d);
+    else if (d.type === 'analog') obj = makeAnalog(d);
     hwDevices.set(d.name, obj);
   }
   sim.imuZero = sim.pose.h;
@@ -2013,7 +2092,9 @@ function makeOpModeBase() {
 const classes = new Map();
 const G = Object.create(null);
 Object.assign(G, {
-  DcMotor: { RunMode, ZeroPowerBehavior, Direction }, DcMotorEx: { RunMode, ZeroPowerBehavior, Direction }, DcMotorSimple: { Direction },
+  DcMotor: { RunMode, ZeroPowerBehavior, Direction },
+  DigitalChannel: { Mode: enumObj(['INPUT', 'OUTPUT']) },
+  Gamepad: { RUMBLE_DURATION_CONTINUOUS: -1, LED_DURATION_CONTINUOUS: -1, RumbleEffect: { Builder: class { addStep() { return this; } build() { return {}; } } } }, DcMotorEx: { RunMode, ZeroPowerBehavior, Direction }, DcMotorSimple: { Direction },
   Servo: { Direction, MIN_POSITION: 0, MAX_POSITION: 1 }, CRServo: { Direction },
   IMU: { Parameters: class { constructor(o) { this.orientation = o; } } },
   RevHubOrientationOnRobot: Object.assign(class { constructor(a, b) { this.logo = a; this.usb = b; } }, {
@@ -2159,7 +2240,7 @@ function stepRobot(dt) {
 function physics(dt) {
   const steps = Math.max(1, Math.ceil(dt / 0.004));
   for (let i = 0; i < steps; i++) { stepMotors(dt / steps); stepRobot(dt / steps); }
-  gameStep(dt);
+  if (MODE === 'arena') gameStep(dt);
   const last = sim.trail[sim.trail.length - 1];
   if (!last || Math.hypot(last.x - sim.pose.x, last.y - sim.pose.y) > 0.6) { sim.trail.push({ x: sim.pose.x, y: sim.pose.y }); if (sim.trail.length > 3000) sim.trail.shift(); }
 }
@@ -2624,6 +2705,11 @@ const EXPLAIN_RULES = [
   [/public\s+(\w+)\s*\(\s*HardwareMap\s+\w+\s*\)/, 'Constructor', `A <b>constructor</b>: it has the class's name and no return type. It runs once when an OpMode writes ${C_('new DriveTrain(hardwareMap)')}. The OpMode passes in its ${C_('hardwareMap')} so this class can look up the motors.`],
   [/^\s*(public|private|protected)\s+(static\s+)?void\s+(\w+)\s*\(([^)]*)\)/, 'Method', `A <b>method</b>: a named block of code you can run by writing its name. ${C_('void')} means it doesn't hand back a value. The things in the parentheses are <b>parameters</b>: values the caller passes in.`],
   [/^\s*(public|private|protected)\s+(static\s+)?(double|int|boolean)\s+(\w+)\s*\(/, 'Method that returns a value', `This method computes something and hands it back with ${C_('return')}. The word before the name (${C_('double')}, ${C_('int')}, ${C_('boolean')}) is the type of value it returns.`],
+  [/hardwareMap\.get\(\s*DigitalChannel\.class|hwMap\.get\(\s*DigitalChannel\.class/, 'Look up a digital device', `Gets a <b>digital</b> device (a REV touch sensor, a limit switch, an LED indicator) by its configured name. Digital means it's only ever on or off: ${C_('true')} or ${C_('false')}.`],
+  [/DigitalChannel\.Mode\.INPUT/, 'Digital input', `Tells the hub to <b>read</b> this pin (a sensor) instead of driving it (an LED would be OUTPUT).`],
+  [/\.getState\(\)/, 'Read the digital pin', `${C_('true')} when the pin is HIGH. A REV touch sensor's pin is HIGH when it is <b>not</b> pressed, so code usually writes ${C_('!sensor.getState()')} to mean "pressed".`],
+  [/hwMap\.get\(/, 'Look up hardware', `Same as ${C_('hardwareMap.get(...)')}: this class received the OpMode's hardwareMap as a parameter named ${C_('hwMap')}.`],
+  [/public\s+void\s+init\s*\(\s*HardwareMap/, 'Subsystem init method', `Instead of a constructor, this class has an ${C_('init(HardwareMap hwMap)')} method. The OpMode creates the object with ${C_('new')}, then calls ${C_('init(hardwareMap)')} from its own init().`],
   [/\.setVelocity\(/, 'Set a speed (DcMotorEx)', `Asks the motor to hold an exact speed in encoder <b>ticks per second</b> (needs RUN_USING_ENCODER). Flywheel shooters use this so every shot leaves at the same speed even as the battery drops. A 6000 RPM goBILDA motor with 28 ticks/rev tops out at 2800 ticks/s.`],
   [/\.getVelocity\(\)/, 'Read the speed', `How fast the motor is actually turning, in ticks per second. Compare it with your target to know when a flywheel is ready to shoot.`],
   [/CRServo/, 'Continuous servo', `A CRServo spins continuously like a small motor: ${C_('setPower(1)')} full one way, ${C_('-1')} the other, 0 stop. Good for feeders and rollers.`],
@@ -2806,15 +2892,215 @@ $('explainSel').addEventListener('change', (e) => { explainFile = e.target.value
 $('btnExplainEdit').addEventListener('click', () => { if (files[explainFile]) openFile(explainFile); });
 
 $('btnExplainThis').addEventListener('click', () => { explainFile = activeFile; explainOpen = -1; showPane('explain'); });
+// ================= YT course: folders per video + virtual test bench =================
+const VIDEOS = [
+  ['_ZIYtNadJBo', 'FTC Android Studio Setup'], ['V3DZVKt6kHU', 'How To Make a FTC Programming Test Bench'], ['R6sl3mNlPes', 'Test Bench Setup & Configuration File'],
+  ['F24X8Ut83os', 'Your First Program'], ['3fhqLpsW7BE', 'Variables'], ['gXegsVvXLd0', 'How to Program a Gamepad'], ['7yzEMGYVPO8', 'Selection Statements'],
+  ['bRZ0UDiIWj0', 'I Wish I Knew This When I Started'], ['RKJhRtbpAeU', 'How To Program REV Touch Sensors'], ['Wv5v8p3Iqi8', 'Programming DC Motors'],
+  ['XOL11DYsKUg', 'How To Program REV Distance Sensors'], ['K9x85yBHjpk', 'How to Program Servos'], ['pyIeknIcT8M', 'How To Program REV Color Sensors'],
+  ['8mB7x6SNUKo', 'IMU/Gyro Beginners Guide'], ['Y6duSoYwHm4', 'Make Your Controller Vibrate & Rumble'], ['RweqIqouYqM', 'How I Build Flawless Autonomous Routines'],
+  ['pREkiGl9yi0', 'Drivetrains: Arcade/Tank Drive'], ['sFCO4du5IZk', 'Mecanum Drivetrain'], ['8O-g4Ijn6Co', 'REV LED Indicator Beginner\'s Guide'],
+  ['hbnBxBD23qM', 'Computer Vision: No-Code Color Tracking (Limelight 3A)'], ['RUEoc55BLHo', 'Limelight 3A Color Detection'], ['slt0fIq-a2E', 'Perfect AprilTag Tracking (Limelight 3A)'],
+  ['-EfOzB_A00Q', 'Using AprilTags in FTC (Limelight 3A)'], ['zfPU8Vy9yiY', 'GoBILDA DECODE Starter Robot: Make It Great'], ['Ap1lBywv00M', 'Measure Distance with AprilTags (Limelight 3A)'],
+  ['OZt33z-lyYo', 'AprilTags: Distance & Angle (Standard Webcam)'], ['aPNCpZzCTKg', 'Flywheel PIDF Tuning']
+];
+const folderKey = (n) => 'video_' + String(n).padStart(2, '0');
+const folderNum = (k) => +k.slice(6);
+
+// Kalyan's finished video 9 code (REV touch sensor) = starting point for video 10.
+const SEED_V10 = {
+"mechanisms/TestBench.java": `package org.firstinspires.ftc.teamcode.mechanisms;
+
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+public class TestBench {
+    
+    private DigitalChannel touchSensor;
+
+    public void init(HardwareMap hwMap) {
+        // Initializes the touch sensor using the name defined in the config profile
+        touchSensor = hwMap.get(DigitalChannel.class, "touch_sensor");
+        // Sets the digital device as an input
+        touchSensor.setMode(DigitalChannel.Mode.INPUT);
+    }
+
+    // Returns true if the sensor is pressed
+    public boolean isTouchSensorPressed() {
+        return !touchSensor.getState();
+    }
+    
+    // Practical Exercise 1 Solution: Returns true if the sensor is released
+    public boolean isTouchSensorReleased() {
+        return touchSensor.getState();
+    }
+}
+`,
+"TouchSensorPractice.java": `package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
+
+@TeleOp
+public class TouchSensorPractice extends OpMode {
+    
+    // Creates a new instance of the TestBench class
+    TestBench bench = new TestBench();
+
+    @Override
+    public void init() {
+        // Passes the hardwareMap from the OpMode down into the TestBench class
+        bench.init(hardwareMap);
+    }
+
+    @Override
+    public void loop() {
+        // Practical Exercise 2 Solution
+        String touchSensorState = "not pressed";
+        
+        if (bench.isTouchSensorPressed()) {
+            touchSensorState = "pressed";
+        }
+        
+        telemetry.addData("Touch Sensor State", touchSensorState);
+    }
+}
+`
+};
+const NEW_CLASS_TEMPLATE = (name) => `package org.firstinspires.ftc.teamcode.mechanisms;
+
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+public class ${name} {
+
+    public void init(HardwareMap hwMap) {
+
+    }
+}
+`;
+const NEW_ITER_TEMPLATE = (name) => `package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+@TeleOp
+public class ${name} extends OpMode {
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void loop() {
+
+    }
+}
+`;
+
+// ---------- bench panel ----------
+function benchDevices() { return parseConfig(settings.benchCfg).devices; }
+let benchBuiltFor = '';
+function buildBenchPanel() {
+  const host = $('benchCards'); if (!host) return;
+  const devs = benchDevices(); benchBuiltFor = settings.benchCfg;
+  host.textContent = '';
+  if (!devs.length) { host.innerHTML = '<p class="small muted">No devices. Add some in Bench setup.</p>'; return; }
+  for (const d of devs) {
+    const card = document.createElement('div'); card.className = 'bcard'; card.dataset.name = d.name; card.dataset.type = d.type;
+    const head = `<div class="bhead"><span class="btype">${esc(d.type)}</span><b>${esc(d.name)}</b></div>`;
+    let body = '';
+    if (d.type === 'motor' || d.type === 'crservo') body = `<div class="bvis"><div class="wheel"><i></i></div></div><div class="bvals" data-v></div>`;
+    else if (d.type === 'servo') body = `<div class="bvis"><div class="servo"><i></i></div></div><div class="bvals" data-v></div>`;
+    else if (d.type === 'touch' || d.type === 'digital') body = `<div class="bvis"><button class="pressbtn" data-press aria-label="Hold to press ${esc(d.name)}">HOLD</button><div class="lamp" data-lamp></div></div><div class="bvals" data-v></div>`;
+    else if (d.type === 'distance') body = `<label class="bslider">Object at <output data-o>20.0 in</output><input type="range" min="0" max="80" step="0.5" value="${bench.dist[d.name] ?? 20}" data-dist></label><div class="bvals" data-v></div>`;
+    else if (d.type === 'color') body = `<div class="swatches">${[['none', null], ['red', [0.7, .08, .07]], ['blue', [.06, .14, .72]], ['yellow', [.62, .55, .08]], ['green', [.08, .55, .12]], ['white', [.6, .6, .6]]].map(([n, c]) => `<button class="sw" data-color='${JSON.stringify(c)}' title="${n}" style="background:${c ? `rgb(${c.map(x => Math.round(x / 0.75 * 255)).join(',')})` : 'transparent'}">${c ? '' : '∅'}</button>`).join('')}</div><div class="bvals" data-v></div>`;
+    else if (d.type === 'analog') body = `<label class="bslider">Knob <output data-o>135°</output><input type="range" min="0" max="270" step="1" value="${bench.pot[d.name] ?? 135}" data-pot></label><div class="bvals" data-v></div>`;
+    else if (d.type === 'imu') body = `<label class="bslider">Rotate hub <output data-o>0°</output><input type="range" min="-180" max="180" step="1" value="${bench.yaw}" data-yaw></label><div class="bvals" data-v></div>`;
+    card.innerHTML = head + body; host.appendChild(card);
+    const press = card.querySelector('[data-press]');
+    if (press) { const on = (e) => { press.setPointerCapture && e.pointerId != null && press.setPointerCapture(e.pointerId); bench.touch[d.name] = true; }; const off = () => { bench.touch[d.name] = false; }; press.addEventListener('pointerdown', on); press.addEventListener('pointerup', off); press.addEventListener('pointercancel', off); press.addEventListener('lostpointercapture', off); }
+    const ds = card.querySelector('[data-dist]'); if (ds) ds.addEventListener('input', () => { bench.dist[d.name] = +ds.value; });
+    const pt = card.querySelector('[data-pot]'); if (pt) pt.addEventListener('input', () => { bench.pot[d.name] = +pt.value; });
+    const yw = card.querySelector('[data-yaw]'); if (yw) yw.addEventListener('input', () => { bench.yaw = +yw.value; });
+    card.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => { bench.color[d.name] = JSON.parse(b.dataset.color); card.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); }));
+  }
+}
+const crAngle = {};
+function updateBenchPanel(dt) {
+  if (benchBuiltFor !== settings.benchCfg) buildBenchPanel();
+  // keyboard: Space holds the first touch/digital input
+  const firstTouch = benchDevices().find(d => d.type === 'touch' || d.type === 'digital');
+  if (firstTouch) { if (keys.has('Space')) { bench.touch[firstTouch.name] = true; bench._kb = true; } else if (bench._kb) { bench.touch[firstTouch.name] = false; bench._kb = false; } }
+  for (const card of document.querySelectorAll('#benchCards .bcard')) {
+    const name = card.dataset.name, type = card.dataset.type, obj = hwDevices.get(name), v = card.querySelector('[data-v]');
+    const live = obj && obj.dev && obj.dev.type === type;
+    let txt = '';
+    if (type === 'motor') {
+      const m = live ? obj : null, ang = m ? (m.shaftPos * m.dir / m.tpr * 360) : 0, rpm = m ? m.shaftVel * m.dir / m.tpr * 60 : 0;
+      card.querySelector('.wheel').style.transform = `rotate(${ang}deg)`;
+      card.querySelector('.wheel').classList.toggle('fwd', rpm > 5); card.querySelector('.wheel').classList.toggle('rev', rpm < -5);
+      txt = m ? `power ${m.power.toFixed(2)}\n${m.mode}\nencoder ${Math.round(m.shaftPos * m.dir)}\n${rpm.toFixed(0)} rpm · ${m.zpb}` : 'not initialized';
+    } else if (type === 'crservo') {
+      const s = live ? obj : null; crAngle[name] = (crAngle[name] || 0) + (s ? s.power * s.dir * 360 * dt : 0);
+      card.querySelector('.wheel').style.transform = `rotate(${crAngle[name]}deg)`;
+      txt = s ? `power ${s.power.toFixed(2)}` : 'not initialized';
+    } else if (type === 'servo') {
+      const s = live ? obj : null, p = s ? physicalServoPos(s) : null;
+      card.querySelector('.servo i').style.transform = `rotate(${p == null ? 0 : p * 270 - 135}deg)`;
+      txt = s ? (p == null ? 'no position set yet' : `position ${s.pos.toFixed(3)}\n${(p * 270).toFixed(0)}° of 270°`) : 'not initialized';
+    } else if (type === 'touch' || type === 'digital') {
+      const pressed = !!bench.touch[name];
+      card.querySelector('[data-press]').classList.toggle('on', pressed);
+      const out = live && obj.mode === 'OUTPUT';
+      card.querySelector('[data-press]').hidden = out; const lamp = card.querySelector('[data-lamp]'); lamp.hidden = !out;
+      if (out) { lamp.classList.toggle('lit', !!obj.out); lamp.style.setProperty('--lamp', /green/i.test(name) ? 'var(--ok)' : /red/i.test(name) ? 'var(--red)' : 'var(--accent)'); }
+      txt = !live ? (pressed ? 'pressed (not initialized)' : 'not initialized') : out ? `OUTPUT · ${obj.out ? 'HIGH (true)' : 'LOW (false)'}` : `INPUT · getState() = ${!pressed}\n${pressed ? 'PRESSED' : 'released'}`;
+    } else if (type === 'distance') {
+      const d = bench.dist[name] ?? 20; card.querySelector('[data-o]').textContent = d.toFixed(1) + ' in';
+      txt = `getDistance(INCH) ≈ ${d > 78 ? '127.95 (out of range)' : d.toFixed(2)}\nCM ≈ ${(d > 78 ? 325 : d * 2.54).toFixed(1)}`;
+    } else if (type === 'color') {
+      const c = bench.color[name]; txt = c ? `red ${c[0].toFixed(3)}\ngreen ${c[1].toFixed(3)}\nblue ${c[2].toFixed(3)}` : 'nothing in front';
+    } else if (type === 'analog') {
+      const a = bench.pot[name] ?? 135; card.querySelector('[data-o]').textContent = a + '°'; txt = `getVoltage() = ${(a / 270 * 3.3).toFixed(3)} V\nmax 3.3 V`;
+    } else if (type === 'imu') {
+      card.querySelector('[data-o]').textContent = bench.yaw + '°'; txt = `yaw ${yawDeg().toFixed(1)}°\n(counter-clockwise +)`;
+    }
+    if (v) v.textContent = txt;
+  }
+  $('padWrap').classList.toggle('rumbling', nowMs() < bench.rumbleUntil);
+}
+function drawPlainField(g, k, X, Y, size) {
+  g.fillStyle = C.panel; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { g.fillStyle = (i + j) % 2 ? C.tile2 : C.tile; g.fillRect(X(-FH + i * 24), Y(FH - j * 24), 24 * k + 1, 24 * k + 1); }
+  g.strokeStyle = C.seam; g.lineWidth = Math.max(1, k * 0.25);
+  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(X(-FH + i * 24), Y(FH)); g.lineTo(X(-FH + i * 24), Y(-FH)); g.stroke(); g.beginPath(); g.moveTo(X(-FH), Y(-FH + i * 24)); g.lineTo(X(FH), Y(-FH + i * 24)); g.stroke(); }
+  g.fillStyle = C.muted; g.font = `${Math.max(8, k * 2.4)}px "JetBrains Mono", monospace`; g.textBaseline = 'top'; g.fillText('practice field · 1 tile = 24 in', X(-FH) + 4, Y(FH) + 4);
+  if (sim.trail.length > 1) { g.strokeStyle = C.trail; g.lineWidth = Math.max(1, k * 0.35); g.beginPath(); sim.trail.forEach((p, i) => i ? g.lineTo(X(p.x), Y(p.y)) : g.moveTo(X(p.x), Y(p.y))); g.stroke(); }
+}
 // ================= Workspace, UI, runner, rendering =================
-let files = store.get('bbsim.files', null);
-if (!files || typeof files !== 'object' || !Object.keys(files).length) files = Object.assign({}, REPO_FILES);
-if (!store.get('bbsim.examples.v1', false)) { for (const [f, src] of Object.entries(EXAMPLES)) if (!files[f]) files[f] = src; store.set('bbsim.examples.v1', true); store.set('bbsim.files', files); }
-let activeFile = store.get('bbsim.active', 'BiobuzzTeleOp.java');
+// workspaces: 'arena' (BIOBUZZ) + one folder per course video
+let workspaces = store.get('bbsim.ws', null);
+if (!workspaces || typeof workspaces !== 'object') {
+  let old = store.get('bbsim.files', null);
+  if (!old || typeof old !== 'object' || !Object.keys(old).length) old = Object.assign({}, REPO_FILES);
+  workspaces = { arena: old };
+}
+if (!workspaces.arena || !Object.keys(workspaces.arena).length) workspaces.arena = Object.assign({}, REPO_FILES);
+if (!store.get('bbsim.examples.v1', false)) { for (const [f, src] of Object.entries(EXAMPLES)) if (!workspaces.arena[f]) workspaces.arena[f] = src; store.set('bbsim.examples.v1', true); }
+for (let n = 1; n <= VIDEOS.length; n++) if (!workspaces[folderKey(n)]) workspaces[folderKey(n)] = {};
+if (!store.get('bbsim.seed.v10', false)) { if (!Object.keys(workspaces.video_10).length) workspaces.video_10 = Object.assign({}, SEED_V10); store.set('bbsim.seed.v10', true); }
+let doneSet = store.get('bbsim.done', { video_09: true });
+let wsActive = store.get('bbsim.wsActive', {});
+let courseFolder = store.get('bbsim.folder', 'video_10'); if (!workspaces[courseFolder]) courseFolder = 'video_10';
+const wsKey = () => MODE === 'arena' ? 'arena' : courseFolder;
+let files = workspaces[wsKey()];
+let activeFile = wsActive[wsKey()] || Object.keys(files)[0];
 if (!files[activeFile]) activeFile = Object.keys(files)[0];
 let progress = store.get('bbsim.progress', {});
 let activeChallenge = null, challengeResult = null;
-const saveFiles = () => { store.set('bbsim.files', files); store.set('bbsim.active', activeFile); };
+const saveFiles = () => { wsActive[wsKey()] = activeFile; store.set('bbsim.ws', workspaces); store.set('bbsim.wsActive', wsActive); store.set('bbsim.folder', courseFolder); };
 
 // ---------- log & telemetry ----------
 const logEl = $('log');
@@ -2848,26 +3134,37 @@ function showPane(name) {
 
 // ---------- editor ----------
 const editor = $('editor');
+function fileLabel(f) {
+  const m = /\bclass\s+([A-Za-z_$][\w$]*)/.exec(files[f] || '');
+  const dir = f.includes('/') ? f.slice(0, f.lastIndexOf('/') + 1) : '';
+  return dir + (m ? m[1] : f.replace(/\.java$/, '').split('/').pop());
+}
 function renderFiles() {
   const bar = $('files'); bar.textContent = '';
-  for (const f of Object.keys(files)) {
+  const names = Object.keys(files);
+  for (const f of names) {
     const b = document.createElement('button');
-    b.className = 'file'; b.textContent = f.replace(/\.java$/, '');
-    if (REPO_FILES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === REPO_FILES[f] ? 'repo' : 'repo · edited'; b.appendChild(tg); }
-    else if (EXAMPLES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === EXAMPLES[f] ? 'example' : 'example · edited'; b.appendChild(tg); }
+    b.className = 'file'; b.textContent = fileLabel(f);
+    if (MODE === 'arena' && REPO_FILES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === REPO_FILES[f] ? 'repo' : 'repo · edited'; b.appendChild(tg); }
+    else if (MODE === 'arena' && EXAMPLES[f]) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = files[f] === EXAMPLES[f] ? 'example' : 'example · edited'; b.appendChild(tg); }
     b.setAttribute('aria-current', String(f === activeFile));
     b.addEventListener('click', () => openFile(f));
     bar.appendChild(b);
   }
-  $('btnRevert').disabled = !(REPO_FILES[activeFile] || EXAMPLES[activeFile]) || files[activeFile] === (REPO_FILES[activeFile] || EXAMPLES[activeFile]);
-  $('btnDelete').disabled = !!REPO_FILES[activeFile];
+  const has = !!files[activeFile];
+  editor.disabled = !has;
+  if (!has) { editor.value = ''; editor.placeholder = MODE === 'course' ? 'This folder is empty. Press "New OpMode" or "New class" to start writing the code from this video.' : 'No files.'; }
+  const orig = MODE === 'arena' ? (REPO_FILES[activeFile] || EXAMPLES[activeFile]) : null;
+  $('btnRevert').disabled = !orig || files[activeFile] === orig;
+  $('btnDelete').disabled = !has || (MODE === 'arena' && !!REPO_FILES[activeFile]);
   $('btnDelete').textContent = 'Delete file';
 }
 function openFile(f) {
+  if (!files[f]) { renderFiles(); return; }
   activeFile = f; editor.value = files[f]; renderFiles(); saveFiles(); showPane('code');
   showCompileStatusFor(f);
 }
-editor.addEventListener('input', () => { files[activeFile] = editor.value; saveFiles(); renderFilesSoon(); });
+editor.addEventListener('input', () => { if (!activeFile || files[activeFile] == null) return; files[activeFile] = editor.value; saveFiles(); renderFilesSoon(); });
 let rfTimer = 0; function renderFilesSoon() { clearTimeout(rfTimer); rfTimer = setTimeout(renderFiles, 400); }
 editor.addEventListener('keydown', (e) => {
   if (e.key === 'Tab' && !e.shiftKey) {
@@ -2890,14 +3187,20 @@ let delArm = 0;
 $('btnDelete').addEventListener('click', () => {
   if (REPO_FILES[activeFile]) return;
   if (Date.now() - delArm > 3000) { delArm = Date.now(); $('btnDelete').textContent = 'Click again to delete'; return; }
-  delete files[activeFile]; activeFile = Object.keys(files)[0]; editor.value = files[activeFile]; saveFiles(); renderFiles(); recompileQuiet();
+  delete files[activeFile]; activeFile = Object.keys(files)[0]; editor.value = activeFile ? files[activeFile] : ''; saveFiles(); renderFiles(); recompileQuiet();
 });
 $('btnNewFile').addEventListener('click', newFile);
 function newFile() {
   let i = 1; while (files[`MyOpMode${i}.java`]) i++;
   const name = `MyOpMode${i}`;
-  files[name + '.java'] = NEW_FILE_TEMPLATE(name); openFile(name + '.java'); recompileQuiet();
+  files[name + '.java'] = MODE === 'course' ? NEW_ITER_TEMPLATE(name) : NEW_FILE_TEMPLATE(name); openFile(name + '.java'); recompileQuiet();
 }
+function newClass() {
+  let i = 1; while (files[`mechanisms/MyClass${i}.java`]) i++;
+  const name = `MyClass${i}`;
+  files[`mechanisms/${name}.java`] = NEW_CLASS_TEMPLATE(name); openFile(`mechanisms/${name}.java`); recompileQuiet();
+}
+$('btnNewClass').addEventListener('click', newClass);
 function addSolution(f) {
   if (!files[f]) files[f] = SOLUTIONS[f];
   openFile(f); recompileQuiet().then(() => { const op = opModeList().find(o => o.file === f); if (op) $('opSelect').value = op.cls; });
@@ -3125,8 +3428,8 @@ function bindSettings() {
   $('optSpeed').addEventListener('change', e => { settings.speed = e.target.value; saveSettings(); });
   $('optMirror').addEventListener('change', e => { settings.mirror = e.target.checked; saveSettings(); });
   $('optVar').addEventListener('change', e => { settings.variation = e.target.checked; saveSettings(); });
-  $('cfgText').addEventListener('input', e => { settings.cfg = e.target.value; saveSettings(); const { errors } = parseConfig(settings.cfg); $('cfgMsg').textContent = errors.length ? errors[0] : 'Saved. Applies at the next INIT.'; });
-  $('btnCfgReset').addEventListener('click', () => { settings.cfg = DEFAULT_CFG; $('cfgText').value = DEFAULT_CFG; saveSettings(); $('cfgMsg').textContent = 'Default configuration restored.'; });
+  $('cfgText').addEventListener('input', e => { if (MODE === 'course') settings.benchCfg = e.target.value; else settings.cfg = e.target.value; saveSettings(); const { errors } = parseConfig(currentCfg()); $('cfgMsg').textContent = errors.length ? errors[0] : 'Saved. Applies at the next INIT.'; });
+  $('btnCfgReset').addEventListener('click', () => { if (MODE === 'course') settings.benchCfg = DEFAULT_BENCH_CFG; else settings.cfg = DEFAULT_CFG; $('cfgText').value = currentCfg(); saveSettings(); $('cfgMsg').textContent = 'Default configuration restored.'; });
 }
 
 // ---------- Input ----------
@@ -3201,14 +3504,13 @@ try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change
 new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
 function draw() {
   const dpr = window.devicePixelRatio || 1, size = Math.round(cv.clientWidth * dpr);
-  if (!size || !game.hives) return;
+  if (!size || (MODE === 'arena' && !game.hives)) return;
   if (cv.width !== size) { cv.width = size; cv.height = size; }
   const k = size / (VIEW * 2), g = ctx2;
   const X = (x) => (x + VIEW) * k, Y = (y) => (VIEW - y) * k;
   g.setTransform(1, 0, 0, 1, 0, 0); g.textBaseline = 'top'; g.textAlign = 'left';
-  drawGame(g, k, X, Y, size);
-  const ms = mechState();
-  drawShotPreview(g, k, X, Y, ms);
+  const ms = MODE === 'arena' ? mechState() : { intakeIn: 0, shooter: null };
+  if (MODE === 'arena') { drawGame(g, k, X, Y, size); drawShotPreview(g, k, X, Y, ms); } else drawPlainField(g, k, X, Y, size);
   // walls
   g.strokeStyle = C.wall; g.lineWidth = Math.max(3, k * 1.2); g.strokeRect(X(-FH), Y(FH), FIELD * k, FIELD * k);
   // robot
@@ -3222,9 +3524,10 @@ function draw() {
     const v = ws[n] || 0; g.fillStyle = Math.abs(v) < 0.5 ? C.wheel : v > 0 ? C.fwd : C.rev; g.fillRect(wx - 2, wy - 0.9, 4, 1.8);
     if (settings.drive === 'mecanum') { g.strokeStyle = C.robot; g.lineWidth = 0.25; const dir = (n === 'FL' || n === 'BR') ? 1 : -1; for (let t = -1.5; t <= 1.5; t += 1) { g.beginPath(); g.moveTo(wx + t - 0.5, wy - 0.8 * dir); g.lineTo(wx + t + 0.5, wy + 0.8 * dir); g.stroke(); } }
   }
-  drawRobotExtras(g, ms);
+  if (MODE === 'arena') drawRobotExtras(g, ms);
+  else { g.fillStyle = C.accent; g.beginPath(); g.moveTo(HALF - 1, 0); g.lineTo(HALF - 5, -3); g.lineTo(HALF - 5, 3); g.closePath(); g.fill(); }
   g.restore();
-  drawHivesAndAir(g, k, X, Y);
+  if (MODE === 'arena') drawHivesAndAir(g, k, X, Y);
 }
 
 // ---------- Main loop ----------
@@ -3249,8 +3552,10 @@ function tickFrame() {
     if (run.state === 'running' && run.matchEnd) { const left = Math.max(0, (run.matchEnd - t) / 1000); mc2.textContent = `${run.annType === 'Autonomous' ? 'Auto' : 'TeleOp'} ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`; }
     else mc2.textContent = run.state === 'init' ? 'waiting for START' : '–';
   }
-  if (frame % 6 === 0) renderScore();
-  draw(); frame++;
+  if (MODE === 'arena') { if (frame % 6 === 0) renderScore(); draw(); }
+  else if (bench.view === 'field') draw();
+  else if (frame % 3 === 0) updateBenchPanel(dt * 3);
+  frame++;
   requestAnimationFrame(tickFrame);
 }
 
@@ -3268,14 +3573,79 @@ function bindGameBar() {
   $('optTip').value = String(game.tipWeight); $('optTip').addEventListener('change', e => { game.tipWeight = Number(e.target.value) || 8; settings.tipWeight = game.tipWeight; saveSettings(); });
 }
 
+// ---------- Sections: YT course / BIOBUZZ arena ----------
+function applyModeUI() {
+  const course = MODE === 'course';
+  $('modeCourse').setAttribute('aria-selected', String(course)); $('modeArena').setAttribute('aria-selected', String(!course));
+  $('modeSub').textContent = course ? 'Code along with "Learn Java for FTC" (Brogan Pratt). Each video folder starts with your finished code from the video before.' : 'Your team\'s Java on a virtual robot in the 2026-27 BIOBUZZ arena. FTC SDK 12.0 API.';
+  $('folderBar').hidden = !course; $('folderNote').hidden = !course;
+  $('tab-game').hidden = course; $('tab-robot').textContent = course ? 'Bench setup' : 'Robot setup';
+  $('benchView').hidden = !course;
+  for (const sel of ['.gamebar', '.scoreboard', '#scoreRows', '#rpLine', '#mechText']) document.querySelector(sel).hidden = course;
+  document.querySelector('.fieldwrap').hidden = course && bench.view !== 'field';
+  $('poseLine').hidden = course && bench.view !== 'field';
+  $('bvBench').setAttribute('aria-selected', String(bench.view === 'bench')); $('bvField').setAttribute('aria-selected', String(bench.view === 'field'));
+  $('cfgText').value = currentCfg();
+  $('btnNewClass').hidden = !course;
+  if (course) renderFolderUI();
+  if (!$('pane-game').hidden && course) showPane('code');
+}
+function renderFolderUI() {
+  const sel = $('folderSel'); sel.textContent = '';
+  VIDEOS.forEach(([id, title], i) => { const k = folderKey(i + 1), o = document.createElement('option'); o.value = k; const n = Object.keys(workspaces[k]).length; o.textContent = `${k}  ·  ${title}${doneSet[k] ? '  ✓' : ''}${n ? '' : '  (empty)'}`; sel.appendChild(o); });
+  sel.value = courseFolder;
+  const n = folderNum(courseFolder), vid = VIDEOS[n - 1];
+  $('ytLink').href = 'https://www.youtube.com/watch?v=' + vid[0];
+  $('ytLink').textContent = `Watch video ${n}`;
+  const prev = n > 1 ? folderKey(n - 1) : null;
+  $('folderNote').textContent = Object.keys(files).length
+    ? `Starts with your finished code from ${prev ? 'video ' + (n - 1) : 'nothing (first video)'}. Watch video ${n} (${vid[1]}), write its code here, then test it on the bench.`
+    : `Empty folder. ${prev && Object.keys(workspaces[prev]).length ? `Finish ${prev} and press "Finished this video → next" to carry your code over, or start fresh here.` : 'Start fresh with New OpMode / New class.'}`;
+  $('btnDone').textContent = n < VIDEOS.length ? `Finished video ${n} → start video ${n + 1}` : 'Finished the series';
+  $('btnDone').disabled = !Object.keys(files).length;
+}
+async function switchWorkspace() {
+  if (run.state !== 'idle') { requestStop('button'); await wait(300); }
+  files = workspaces[wsKey()];
+  activeFile = wsActive[wsKey()] && files[wsActive[wsKey()]] ? wsActive[wsKey()] : Object.keys(files)[0];
+  editor.value = activeFile ? files[activeFile] : '';
+  renderFiles(); applyModeUI(); saveFiles();
+  explainFile = null; if (!$('pane-explain').hidden) renderExplain();
+  buildHardware(); if (MODE === 'course') buildBenchPanel();
+  await recompileQuiet();
+  logEl.textContent = ''; run.telemetryShown = []; renderTelemetry();
+  log('info', MODE === 'course' ? `${courseFolder}: ${opModeList().length} OpMode${opModeList().length === 1 ? '' : 's'} ready.` : `BIOBUZZ arena: ${opModeList().length} OpModes ready.`);
+}
+function setMode(m) { if (m === MODE) return; MODE = m; store.set('bbsim.mode', m); if (m === 'arena') { placeRobot(START_POSES[$('startSelect').value] || START_POSES.wall); } switchWorkspace(); }
+let doneArm = 0;
+function bindCourse() {
+  $('modeCourse').addEventListener('click', () => setMode('course'));
+  $('modeArena').addEventListener('click', () => setMode('arena'));
+  $('folderSel').addEventListener('change', (e) => { courseFolder = e.target.value; switchWorkspace(); });
+  $('bvBench').addEventListener('click', () => { bench.view = 'bench'; applyModeUI(); });
+  $('bvField').addEventListener('click', () => { bench.view = 'field'; placeRobot({ x: 0, y: 0, hDeg: 90 }); applyModeUI(); });
+  $('btnDone').addEventListener('click', () => {
+    const n = folderNum(courseFolder);
+    doneSet[courseFolder] = true; store.set('bbsim.done', doneSet);
+    if (n >= VIDEOS.length) { log('ok', 'Series complete.'); renderFolderUI(); return; }
+    const next = folderKey(n + 1);
+    if (Object.keys(workspaces[next]).length && Date.now() - doneArm > 4000) { doneArm = Date.now(); $('btnDone').textContent = `${next} already has code. Click again to replace it`; return; }
+    workspaces[next] = JSON.parse(JSON.stringify(files));
+    log('ok', `Copied your video ${n} code into ${next}.`);
+    courseFolder = next; switchWorkspace();
+  });
+}
+
 // ---------- Boot ----------
 (async function boot() {
   bindSettings();
   bindGameBar();
+  bindCourse();
   editor.value = files[activeFile]; renderFiles();
   renderLessons(false);
   showPane(['code','explain','robot','game'].includes(store.get('bbsim.pane2', 'code')) ? store.get('bbsim.pane2', 'code') : 'code');
   placeRobot(START_POSES.wall); buildHardware(); resetField(); game.tipWeight = Number(settings.tipWeight) || 8; game.preview = settings.preview !== false;
+  applyModeUI(); if (MODE === 'course') buildBenchPanel();
   await compileWorkspace(files); lastCompileAt = Date.now();
   refreshOpModes(); showCompileStatusFor(activeFile);
   for (const e of compileErrors) log('err', `${e.file}${e.line ? ' line ' + e.line : ''}: ${e.message}`);

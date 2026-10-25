@@ -1,6 +1,11 @@
 # Biobuzz Playground
 
-A browser playground for FTC team [Sparky384/2026-Biobuzz](https://github.com/Sparky384/2026-Biobuzz): your team's Java
+Two sections in one page:
+
+- **YT Course**: one folder per video of Brogan Pratt's 27-part "Learn Java for FTC" series. Each folder starts with your finished code from the previous video (press *Finished this video → next* to carry it over). Test on a virtual test bench (touch sensor, DC motor, servo, distance, color, potentiometer, IMU, LEDs, gamepad rumble) or a practice field for the drivetrain videos.
+- **BIOBUZZ Arena**: the full 2026-27 game.
+
+The arena is a browser playground for FTC team [Sparky384/2026-Biobuzz](https://github.com/Sparky384/2026-Biobuzz): your team's Java
 runs on a virtual robot in the 2026-27 **BIOBUZZ** arena, laid out and scored per the Competition Manual (TU06).
 
 - **Arena**: HIVE structure with two tipping HIVES, 4 FLOWERS, GARDENS, LOADING ZONES, 40 POLLEN and 16 NECTAR staged per §10.3.1.
